@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار التعلم المدمج (صح/خطأ) - الجزء الثاني</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Cairo", Arial, sans-serif;
+            background: linear-gradient(135deg, #eef2ff 0%, #e6eeff 100%);
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1.6;
+        }
+        
+        .box {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px 15px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            color: #2c3e50;
+            padding: 0 10px;
+        }
+        
+        #score {
+            font-size: 18px;
+            background: linear-gradient(135deg, #f7f9ff 0%, #edf2ff 100%);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px solid #dce3ff;
+            font-weight: bold;
+            color: #4a64ff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .question {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8faff;
+            border-radius: 15px;
+            border-right: 4px solid #4a64ff;
+            color: #333;
+            line-height: 1.8;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+        }
+        
+        .options-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-direction: column;
+        }
+        
+        @media (min-width: 480px) {
+            .options-container {
+                flex-direction: row;
+            }
+        }
+        
+        .option {
+            flex: 1;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8edff 100%);
+            padding: 18px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #444;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 70px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option:hover {
+            background: linear-gradient(135deg, #e1e8ff 0%, #d9e0ff 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 100, 255, 0.1);
+        }
+        
+        .option:active {
+            transform: translateY(0);
+        }
+        
+        .option-true {
+            color: #1b8a2c;
+        }
+        
+        .option-false {
+            color: #b30000;
+        }
+        
+        .option.correct {
+            background: linear-gradient(135deg, #b6ffb6 0%, #a8ffa8 100%);
+            border-color: #1b8a2c;
+            color: #1b8a2c;
+            box-shadow: 0 4px 12px rgba(27, 138, 44, 0.2);
+        }
+        
+        .option.wrong {
+            background: linear-gradient(135deg, #ffb6b6 0%, #ffa8a8 100%);
+            border-color: #b30000;
+            color: #b30000;
+            box-shadow: 0 4px 12px rgba(179, 0, 0, 0.2);
+        }
+        
+        #feedback {
+            font-size: 18px;
+            text-align: center;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+            border-radius: 12px;
+            font-weight: bold;
+            animation: fadeIn 0.5s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        #nextBtn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #4a64ff 0%, #6a82ff 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+            display: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 12px rgba(74, 100, 255, 0.3);
+        }
+        
+        #nextBtn:hover {
+            background: linear-gradient(135deg, #3a54ef 0%, #5a72ef 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(74, 100, 255, 0.4);
+        }
+        
+        #nextBtn:active {
+            transform: translateY(0);
+        }
+        
+        #result {
+            display: none;
+            padding: 25px 20px;
+            background: linear-gradient(135deg, #d4ffd6 0%, #c0ffc4 100%);
+            border-radius: 15px;
+            font-size: 1.4rem;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #1b8a2c;
+            animation: fadeIn 0.8s ease;
+            border: 3px solid #a8ffb0;
+            box-shadow: 0 8px 16px rgba(27, 138, 44, 0.15);
+        }
+        
+        /* تخصيص شريط التمرير */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #4a64ff;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3a54ef;
+        }
+        
+        /* تحسينات للشاشات الصغيرة جدًا */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .box {
+                padding: 15px 10px;
+                border-radius: 15px;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+                margin-bottom: 12px;
+            }
+            
+            .question {
+                font-size: 1rem;
+                padding: 12px;
+                margin-bottom: 15px;
+            }
+            
+            .option {
+                padding: 16px 12px;
+                font-size: 1rem;
+                min-height: 60px;
+            }
+            
+            #score {
+                font-size: 16px;
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            
+            #nextBtn {
+                padding: 16px;
+                font-size: 16px;
+                margin-top: 15px;
+            }
+            
+            #result {
+                font-size: 1.2rem;
+                padding: 20px 15px;
+            }
+        }
+        
+        /* تحسينات للشاشات الأفقية */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body {
+                padding: 10px;
+            }
+            
+            .box {
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            .question {
+                font-size: 1rem;
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .option {
+                padding: 14px 10px;
+                min-height: 55px;
+            }
+        }
+        
+        /* رقم السؤال */
+        .question-number {
+            display: inline-block;
+            background: #4a64ff;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 3px 6px rgba(74, 100, 255, 0.2);
+        }
+        
+        /* أيقونات داخل الأزرار */
+        .option-icon {
+            margin-left: 8px;
+            font-size: 1.2rem;
+        }
+        
+        /* شريط التقدم */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4a64ff, #6a82ff);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>اختبار التعلم المدمج (Nadeen_Harby)</h2>
+    
+    <div class="progress-text" id="progressText">السؤال 1 من 15</div>
+    <div class="progress-bar">
+        <div class="progress" id="progressBar"></div>
+    </div>
+    
+    <div id="score">النتيجة: 0</div>
+    
+    <div class="question" id="questionText"></div>
+    
+    <div class="options-container" id="options"></div>
+    
+    <div id="feedback"></div>
+    
+    <button id="nextBtn" onclick="nextQuestion()">السؤال التالي</button>
+    
+    <div id="result"></div>
+</div>
+
+<script>
+const questions = [
+    // الأسئلة من 1-10 (صح/خطأ)
+    { q: "نظم إدارة التعلم تحدد الإطار العام للمحتوى الفعلي.", options: ["صواب", "خطأ"], correct: 1 },
+    { q: "يجب أن تكون واجهة المستخدم تدعم كل عناصر برنامج التعلم المدمج.", options: ["صواب", "خطأ"], correct: 0 },
+    { q: "يهتم البعد التكنولوجي بتحديد نظم إدارة التعلم ونظم إدارة المحتوى.", options: ["صواب", "خطأ"], correct: 0 },
+    { q: "يخاطب البعد التربوي القضايا التي تتعلق بالشؤون الأكاديمية والإدارية.", options: ["صواب", "خطأ"], correct: 1 },
+    { q: "يهدف نموذج بدر الخان إلى الوصول إلى خبرة تعليمية ذات معنى.", options: ["صواب", "خطأ"], correct: 0 },
+    { q: "يتم رصد النتائج ومعالجتها في المرحلة الرابعة في نموذج محمد عطية خميس.", options: ["صواب", "خطأ"], correct: 0 },
+    { q: "الفكرة الأساسية للنظرية البنائية هي أن التعلم استجابة لمثيرات خارجية يتم تعزيزها بالتكرار والمكافأة.", options: ["صواب", "خطأ"], correct: 1 },
+    { q: "مرحلة الإنتاج يتم فيها تنظيم أهداف العملية التعليمية.", options: ["صواب", "خطأ"], correct: 1 },
+    { q: "يؤدي التصميم دورًا أساسيًا في فاعلية التعلم المدمج.", options: ["صواب", "خطأ"], correct: 0 },
+    { q: "التصميم الجيد يضمن المحافظة على استمرار اهتمام الطلاب واستثارة دافعيتهم.", options: ["صواب", "خطأ"], correct: 0 },
+    { q: "يتم تصميم برنامج التعلم المدمج وتطويره في ضوء الفلسفة التربوية للمجتمع أو الدولة.", options: ["صواب", "خطأ"], correct: 0 },
+    { q: "يعتمد التصميم على مفهوم المنهج الذي يتبناه المتعلم.", options: ["صواب", "خطأ"], correct: 1 },
+    { q: "يجب استخدام طريقة تقويم مناسبة لكل طريقة تعليم.", options: ["صواب", "خطأ"], correct: 0 },
+    { q: "ينقسم نموذج محمد عطية خميس إلى أربع مراحل متداخلة ومتكاملة.", options: ["صواب", "خطأ"], correct: 0 },
+    { q: "يعتمد التصميم على مراعاة الأسس التقنية في تصميم البرنامج؛ لتتحقق كفايته وفاعليته.", options: ["صواب", "خطأ"], correct: 0 }
+];
+
+let index = 0;
+let score = 0;
+
+function updateProgress() {
+    const progress = ((index + 1) / questions.length) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    document.getElementById('progressText').textContent = `السؤال ${index + 1} من ${questions.length}`;
+}
+
+function loadQuestion() {
+    document.getElementById("nextBtn").style.display = "none";
+    document.getElementById("feedback").style.display = "none";
+
+    const q = questions[index];
+    document.getElementById("questionText").innerHTML = q.q;
+    
+    updateProgress();
+
+    let html = `
+        <div class="option option-true" onclick="selectOption(0)">
+            <span class="option-icon">✓</span> صواب
+        </div>
+        <div class="option option-false" onclick="selectOption(1)">
+            <span class="option-icon">✗</span> خطأ
+        </div>
+    `;
+
+    document.getElementById("options").innerHTML = html;
+}
+
+function selectOption(i) {
+    const q = questions[index];
+    const feedback = document.getElementById("feedback");
+    const all = document.querySelectorAll(".option");
+
+    all.forEach(el => el.style.pointerEvents = "none");
+
+    if (i === q.correct) {
+        score++;
+        feedback.textContent = "✔ إجابة صحيحة";
+        feedback.style.background = "linear-gradient(135deg, #c8ffce 0%, #b0ffb8 100%)";
+        feedback.style.color = "#1b8a2c";
+        feedback.style.border = "2px solid #1b8a2c";
+    } else {
+        feedback.textContent = "❌ إجابة خاطئة";
+        feedback.style.background = "linear-gradient(135deg, #ffcccc 0%, #ffb8b8 100%)";
+        feedback.style.color = "#b30000";
+        feedback.style.border = "2px solid #b30000";
+    }
+
+    document.getElementById("score").textContent = `النتيجة: ${score}`;
+    feedback.style.display = "block";
+
+    all.forEach((el, idx) => {
+        if (idx === q.correct) {
+            el.classList.add("correct");
+        } else if (idx === i) {
+            el.classList.add("wrong");
+        }
+    });
+
+    document.getElementById("nextBtn").style.display = "block";
+    
+    // التمرير التلقائي للأسفل لعرض النتيجة
+    setTimeout(() => {
+        feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 300);
+}
+
+function nextQuestion() {
+    index++;
+    
+    if (index === questions.length) {
+        showResult();
+    } else {
+        loadQuestion();
+        // التمرير التلقائي للأعلى للسؤال الجديد
+        document.getElementById("questionText").scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function showResult() {
+    document.getElementById("questionText").style.display = "none";
+    document.getElementById("options").style.display = "none";
+    document.getElementById("nextBtn").style.display = "none";
+    document.getElementById("feedback").style.display = "none";
+    document.getElementById("progressText").style.display = "none";
+    document.getElementById("progressBar").parentElement.style.display = "none";
+    
+    const result = document.getElementById("result");
+    result.style.display = "block";
+    
+    const percentage = Math.round((score / questions.length) * 100);
+    let message = "";
+    let emoji = "";
+    
+    if (percentage >= 90) {
+        message = "اللهم بارك، بالتوفيق";
+        emoji = "🏆";
+    } else if (percentage >= 70) {
+        message = "راجع شوية، موفق بإذن الله";
+        emoji = "😊";
+    } else if (percentage >= 50) {
+        message = "محتاج تذاكر تاني بالتوفيق";
+        emoji = "👍";
+    } else {
+        message = "ذاكر يا بيه";
+        emoji = "📚";
+    }
+    
+    result.innerHTML = `
+        <div style="font-size: 1.8rem; margin-bottom: 15px;">${emoji} انتهى الاختبار!</div>
+        <div style="font-size: 2rem; color: #1b8a2c; margin-bottom: 15px;">${score} / ${questions.length}</div>
+        <div style="font-size: 1.4rem; color: #4a64ff; margin-bottom: 15px;">${percentage}%</div>
+        <div style="font-size: 1.2rem; color: #666; margin-bottom: 20px; line-height: 1.6;">${message}</div>
+        <button onclick="location.reload()" style="
+            background: linear-gradient(135deg, #4a64ff 0%, #6a82ff 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 8px rgba(74, 100, 255, 0.3);
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 250px;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(74, 100, 255, 0.4)'" 
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 8px rgba(74, 100, 255, 0.3)'">
+            إعادة الاختبار
+        </button>
+    `;
+    
+    // التمرير التلقائي لعرض النتيجة
+    setTimeout(() => {
+        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+}
+
+// تحميل السؤال الأول
+loadQuestion();
+
+// إضافة دعم للزر الخلفي في المتصفح
+window.addEventListener('popstate', function(event) {
+    if (index > 0) {
+        index--;
+        loadQuestion();
+    }
+});
+
+// إضافة دعم للأزرار الافتراضية
+document.addEventListener('keydown', function(event) {
+    if (event.key === '1' || event.key === 'ص') {
+        document.querySelectorAll('.option')[0]?.click();
+    } else if (event.key === '2' || event.key === 'خ') {
+        document.querySelectorAll('.option')[1]?.click();
+    } else if (event.key === 'Enter' && document.getElementById('nextBtn').style.display === 'block') {
+        document.getElementById('nextBtn').click();
+    }
+});
+</script>
+
+</body>
+</html>

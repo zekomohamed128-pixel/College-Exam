@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار التعلم المدمج (اختيار من متعدد)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Cairo", Arial, sans-serif;
+            background: linear-gradient(135deg, #eef2ff 0%, #e6eeff 100%);
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1.6;
+        }
+        
+        .box {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px 15px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            color: #2c3e50;
+            padding: 0 10px;
+        }
+        
+        #score {
+            font-size: 18px;
+            background: linear-gradient(135deg, #f7f9ff 0%, #edf2ff 100%);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px solid #dce3ff;
+            font-weight: bold;
+            color: #4a64ff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .question {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8faff;
+            border-radius: 15px;
+            border-right: 4px solid #4a64ff;
+            color: #333;
+            line-height: 1.8;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+        }
+        
+        .options-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-direction: column;
+        }
+        
+        .option {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8edff 100%);
+            padding: 18px 15px 18px 60px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #444;
+            text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 70px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option:hover {
+            background: linear-gradient(135deg, #e1e8ff 0%, #d9e0ff 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 100, 255, 0.1);
+        }
+        
+        .option:active {
+            transform: translateY(0);
+        }
+        
+        .option.correct {
+            background: linear-gradient(135deg, #b6ffb6 0%, #a8ffa8 100%);
+            border-color: #1b8a2c;
+            color: #1b8a2c;
+            box-shadow: 0 4px 12px rgba(27, 138, 44, 0.2);
+        }
+        
+        .option.wrong {
+            background: linear-gradient(135deg, #ffb6b6 0%, #ffa8a8 100%);
+            border-color: #b30000;
+            color: #b30000;
+            box-shadow: 0 4px 12px rgba(179, 0, 0, 0.2);
+        }
+        
+        .option-letter {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            background: #4a64ff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 3px 6px rgba(74, 100, 255, 0.2);
+        }
+        
+        .option.correct .option-letter {
+            background: #1b8a2c;
+        }
+        
+        .option.wrong .option-letter {
+            background: #b30000;
+        }
+        
+        #feedback {
+            font-size: 18px;
+            text-align: center;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+            border-radius: 12px;
+            font-weight: bold;
+            animation: fadeIn 0.5s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        #nextBtn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #4a64ff 0%, #6a82ff 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+            display: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 12px rgba(74, 100, 255, 0.3);
+        }
+        
+        #nextBtn:hover {
+            background: linear-gradient(135deg, #3a54ef 0%, #5a72ef 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(74, 100, 255, 0.4);
+        }
+        
+        #nextBtn:active {
+            transform: translateY(0);
+        }
+        
+        #result {
+            display: none;
+            padding: 25px 20px;
+            background: linear-gradient(135deg, #d4ffd6 0%, #c0ffc4 100%);
+            border-radius: 15px;
+            font-size: 1.4rem;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #1b8a2c;
+            animation: fadeIn 0.8s ease;
+            border: 3px solid #a8ffb0;
+            box-shadow: 0 8px 16px rgba(27, 138, 44, 0.15);
+        }
+        
+        /* تخصيص شريط التمرير */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #4a64ff;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3a54ef;
+        }
+        
+        /* تحسينات للشاشات الصغيرة جدًا */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .box {
+                padding: 15px 10px;
+                border-radius: 15px;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+                margin-bottom: 12px;
+            }
+            
+            .question {
+                font-size: 1rem;
+                padding: 12px;
+                margin-bottom: 15px;
+            }
+            
+            .option {
+                padding: 16px 12px 16px 50px;
+                font-size: 1rem;
+                min-height: 60px;
+            }
+            
+            #score {
+                font-size: 16px;
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            
+            #nextBtn {
+                padding: 16px;
+                font-size: 16px;
+                margin-top: 15px;
+            }
+            
+            #result {
+                font-size: 1.2rem;
+                padding: 20px 15px;
+            }
+            
+            .option-letter {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+        }
+        
+        /* تحسينات للشاشات الأفقية */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body {
+                padding: 10px;
+            }
+            
+            .box {
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            .question {
+                font-size: 1rem;
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .option {
+                padding: 14px 10px 14px 50px;
+                min-height: 55px;
+            }
+        }
+        
+        /* رقم السؤال */
+        .question-number {
+            display: inline-block;
+            background: #4a64ff;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 3px 6px rgba(74, 100, 255, 0.2);
+        }
+        
+        /* شريط التقدم */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4a64ff, #6a82ff);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>اختبار التعلم المدمج (Amr_musa)</h2>
+    
+    <div class="progress-text" id="progressText">السؤال 1 من 10</div>
+    <div class="progress-bar">
+        <div class="progress" id="progressBar"></div>
+    </div>
+    
+    <div id="score">النتيجة: 0</div>
+    
+    <div class="question" id="questionText"></div>
+    
+    <div class="options-container" id="options"></div>
+    
+    <div id="feedback"></div>
+    
+    <button id="nextBtn" onclick="nextQuestion()">السؤال التالي</button>
+    
+    <div id="result"></div>
+</div>
+
+<script>
+const questions = [
+    // الفصل الأول – المقدمة والتعريفات (20 سؤالاً)
+    { q: "وفقاً لـ 'هورن وستاكر'، يتيح التعلم المدمج للطالب التحكم في الزمان والمكان و:", options: ["شخصية المعلم", "تكلفة الرسوم الدراسية", "المسار الذي يسير وفقه", "المنهج الدراسي"], correct: 2 },
+    { q: "تعرف جامعة 'سيدني الغربية' التعلم المدمج بأنه نهج استراتيجي لدمج جوانب التعلم وجهاً لوجه مع:", options: ["الكتب الورقية فقط", "التدريب المهني الميداني", "الأنشطة الرياضية", "التفاعل عبر الإنترنت"], correct: 3 },
+    { q: "من مبررات اللجوء للتعلم المدمج أنه يساعد في مقابلة الأنماط المختلفة للمتعلمين ومنها:", options: ["السمعي والبصري واللفظي والحسي والمستقل", "النمط التقليدي المعتمد على الحفظ", "النمط السمعي فقط", "النمط البصري فقط"], correct: 0 },
+    { q: "أحد أهم التحولات في التعلم المدمج هو الانتقال من التعليم المتمركز حول المعلم إلى:", options: ["التعليم المتمركز حول الإدارة", "التعليم المتمركز حول الاختبارات", "التعليم المتمركز حول المتعلم", "التعليم المتمركز حول التكنولوجيا فقط"], correct: 2 },
+    { q: "يمثل التعلم المدمج للجامعات أهمية استراتيجية خاصة في:", options: ["تعويض نقص مساحات الفصول الدراسية المحدودة", "زيادة ساعات الدوام الرسمي", "تقليل عدد الأساتذة", "إلغاء الفصول الدراسية"], correct: 0 },
+    { q: "المكون الذي لا يمكن أن يحل محله شيء في التواصل المباشر مع المعلم هو:", options: ["البريد الإلكتروني", "الكتب الإلكترونية", "المنتديات التعليمية", "الأحداث الحية المتزامنة (Live Events)"], correct: 3 },
+    { q: "يضيف 'التعلم الذاتي غير المتزامن' قيمة كبيرة لمعادلة التعلم المدمج بشرط الاعتماد على:", options: ["التوظيف الفعال لمبادئ التصميم التعليمي", "سرعة الإنترنت فقط", "كثرة الفيديوهات", "الحفظ والتلقين"], correct: 0 },
+    { q: "المكون الذي يضمن بقاء أثر التعلم في بيئة العمل وانتقاله هو:", options: ["المحاضرات الصفية", "أدوات دعم الأداء (Performance Support)", "التقييم", "التعاون"], correct: 1 },
+    { q: "من المتطلبات التقنية لتطبيق التعلم المدمج توفير نظام (LMS) وهو:", options: ["نظام التقييم السريع", "نظام التواصل الاجتماعي", "نظام الإدارة التعليمية", "نظام إدارة المحتوى"], correct: 2 },
+    { q: "يجب على المعلم في التعلم المدمج تحويل الصور الجامدة إلى واقع حي يثير انتباه الطلاب عبر:", options: ["الرسوم اليدوية", "النصوص الطويلة", "الكتب المطبوعة", "الوسائط المتعددة والفائقة (Multimedia)"], correct: 3 },
+    { q: "في التعلم المدمج، يجب أن يشعر المتعلم بأنه:", options: ["مشارك وليس متلقي", "مجرد مستمع في الصف", "متلقي سلبي للمعلومات", "مراقب لعمل المعلم"], correct: 0 },
+    { q: "التعلم المدمج الذي يتطلب تفاعل المعلم كـ 'محفز كيميائي' لإنجاز التعلم هو:", options: ["الذي تقوده الاتجاه", "الذي تقوده التكنولوجيا", "الذي تقوده المهارة", "الذي تقوده الكفاية"], correct: 2 },
+    { q: "النموذج الذي يدمج أدوات دعم الأداء مع مصادر إدارة المعرفة واستشارات الخبراء هو:", options: ["التعلم المدمج التقليدي", "التعلم المدمج الذي يقوده الاتجاه", "التعلم المدمج الذي تقوده المهارة", "التعلم المدمج الذي تقوده الكفاية"], correct: 3 },
+    { q: "المستوى الذي يربط فقط بين أدوات توصيل المعلومات ومحتوى التعلم هو:", options: ["المستوى المركب (Component)", "المستوى التشاركي", "مستوى الامتداد", "المستوى المتكامل"], correct: 0 },
+    { q: "المستوى الذي ينصهر فيه الشق التقليدي والإلكتروني تماماً ويشمل استخدام المحمول هو:", options: ["المستوى المركب", "مستوى الامتداد والانتشار (Expansive)", "المستوى الثنائي", "المستوى المتكامل"], correct: 1 },
+    { q: "أحد أهم عوامل نجاح التعلم المدمج هو 'التكرار'، والذي يتيح للمتعلم:", options: ["إعادة السنة الدراسية", "حفظ التعريفات", "المرور على نفس الموضوع بأكثر من أداة ومصدر", "تكرار الاختبارات"], correct: 2 },
+    { q: "يساعد 'الاتصال الشبكي' بين الطلاب (الجيل الثاني من الإنترنت) في:", options: ["زيادة التنافس الفردي", "تقليل وقت الدراسة", "إلغاء دور المعلم", "تبادل الخبرات وحل المشكلات والمشاركة في البرمجيات"], correct: 3 },
+    { q: "يُعد تحديد 'خصائص المتعلمين' خطوة هامة لتحديد:", options: ["نوع الدمج والمصادر المناسبة لهم", "تكلفة البرنامج", "موعد الامتحانات", "عدد المعلمين"], correct: 0 },
+    { q: "من الصعوبات التي تواجه التعلم المدمج وتتعلق بالجانب المادي:", options: ["سهولة استخدام التكنولوجيا", "توفر الإنترنت", "ارتفاع التكلفة مقارنة بالتعليم التقليدي", "رغبة المعلمين"], correct: 2 },
+    { q: "يعتبر 'الاتصال التربوي' في التعلم المدمج بمثابة:", options: ["وسيلة ثانوية", "مادة مستقلة", "عائق", "العمود الفقري الذي يربط بين عناصر النظام"], correct: 3 },
+
+    // الفصل الثاني – النظريات والتصميم التعليمي (20 سؤالاً)
+    { q: "التعلم المدمج ليس مبنياً على نظرية واحدة بل هو مزيج من السلوكية والمعرفية و:", options: ["البنائية والاجتماعية", "الإدارية", "الفلسفية", "الفيزياء"], correct: 0 },
+    { q: "ترى النظرية العامة للنظم أن العملية التعليمية تُفهم باعتبارها:", options: ["أجزاء منفصلة", "كتب فقط", "نظاماً كلياً تتفاعل فيه العناصر", "علاقة فردية"], correct: 2 },
+    { q: "وفقاً لنظرية النظم، يمارس المتعلم دوراً:", options: ["سلبياً", "إدارياً", "ثانوياً", "نشطاً في بناء المعرفة"], correct: 3 },
+    { q: "يتكون النظام الاتصالي التربوي من (المرسل، المستقبل، الرسالة، و):", options: ["القناة (الوسيلة)", "الكتاب", "الإدارة", "الفصل"], correct: 0 },
+    { q: "تسمح المنصات الرقمية بتقديم دعم فوري من خلال:", options: ["زيادة الصفحات", "إلغاء المحاضرات", "تحليل الاستجابات وتقديم تغذية راجعة", "منع التفاعل"], correct: 2 },
+    { q: "تُستخدم النظرية السلوكية في تصميم:", options: ["المشاريع البحثية", "العلاقات الاجتماعية", "الفلسفة التعليمية", "الاختبارات الإلكترونية والتمارين"], correct: 3 },
+    { q: "تساعد النظرية المعرفية على تصميم:", options: ["محتوى منظم وخرائط ذهنية", "مباني حديثة", "قوانين صارمة", "حوافز مادية"], correct: 0 },
+    { q: "تؤكد النظرية البنائية أن المتعلم يبني معرفته عبر:", options: ["الحفظ", "المحاضرات", "التفاعل مع البيئة والأنشطة التعاونية", "القراءة فقط"], correct: 2 },
+    { q: "تعتمد نظرية التعلم الاجتماعي على:", options: ["الدراسة الفردية", "الهدوء", "حل المسائل", "الملاحظة والنمذجة والتقليد"], correct: 3 },
+    { q: "مبدأ التعلم للإتقان يضمن أن:", options: ["جميع الطلاب قادرون على التعلم إذا توفر الوقت والدعم", "المتفوقون فقط", "المنهج سريع", "التقييم صعب"], correct: 0 },
+    { q: "توفر بيئة التعلم المدمج منطقة:", options: ["الراحة", "الدراسة", "الاختبار", "النمو القريبة (ZPD)"], correct: 3 },
+    { q: "المنهج المتمركز حول المادة هو المنهج المتمركز حول:", options: ["المتعلم", "المجتمع", "التكنولوجيا", "المعرفة"], correct: 3 },
+    { q: "أول مراحل تصميم المقرر هي التحليل لتحديد:", options: ["الاحتياجات والبنية التحتية", "الألوان", "الدرجات", "الكتب"], correct: 0 },
+    { q: "مرحلة ترجمة التصميم إلى مواد تعليمية هي:", options: ["التنفيذ", "الإدارة", "الإنتاج", "التحليل"], correct: 2 },
+    { q: "البعد الذي يهتم باستعداد المؤسسة هو:", options: ["التربوي", "التقني", "الإداري", "المؤسسي"], correct: 3 },
+    { q: "يهتم بُعد تصميم الواجهة بـ:", options: ["واجهة مستخدم متكاملة", "الرواتب", "اختبارات الذكاء", "الأهداف السلوكية"], correct: 0 },
+    { q: "يركز البُعد الأخلاقي على:", options: ["السرعة", "الجودة", "التنظيم", "المساواة والتكافؤ"], correct: 3 },
+    { q: "يتميز نموذج محمد عطية خميس بـ:", options: ["الجمود", "التقليدية", "البرمجة", "المرونة والتكرار"], correct: 3 },
+    { q: "نموذج عبد اللطيف الجزار مخصص لتصميم:", options: ["الكتب", "المناهج", "الأنظمة", "برمجيات الوسائط المتعددة"], correct: 3 },
+    { q: "تهدف مرحلة التقويم إلى:", options: ["العقاب", "الصعوبة", "تطوير النموذج وفق التغذية الراجعة", "تقليل الساعات"], correct: 2 },
+
+    // الفصل الرابع – التعليم المعكوس (20 سؤالاً)
+    { q: "تعتمد استراتيجية التعليم المعكوس على:", options: ["إلغاء الدراسة", "التعليم النظري", "تبادل الأدوار", "نقل التعلم المبدئي خارج الصف"], correct: 3 },
+    { q: "يُتاح تسجيل المحاضرات للطلاب:", options: ["قبل الحضور للمحاضرات", "بعد الامتحان", "في الصيف", "عند غياب المعلم"], correct: 0 },
+    { q: "تعني البيئة المرنة:", options: ["كراسي مريحة", "الخرج بحرية", "إعادة ترتيب بيئة التعلم حسب الموقف", "إلغاء الحضور"], correct: 2 },
+    { q: "يتحول المتعلم في التعليم المعكوس إلى:", options: ["مراقب", "مدير", "مصحح", "ناشط ومشارك"], correct: 3 },
+    { q: "يُعد الفيديو التعليمي:", options: ["مصدراً رئيسياً لنقل المحتوى", "ترفيه", "بديلاً للمعلم", "تقويم نهائي"], correct: 0 },
+    { q: "يتحدث التعليم المعكوس لغة العصر باستخدام:", options: ["التلفاز", "الكتب", "الفودكاست والشبكات الاجتماعية", "الآلة الكاتبة"], correct: 2 },
+    { q: "يساعد الطلاب المتعثرين عبر:", options: ["الدروس الإجبارية", "التبسيط", "العزل", "التحكم في الفيديو (إيقاف/إعادة)"], correct: 3 },
+    { q: "يدعم الشفافية لأنه يتيح لأولياء الأمور:", options: ["الاطلاع على المحتوى", "وضع الدرجات", "الحضور اليومي", "المراقبة"], correct: 0 },
+    { q: "يقلل الإحباط لأن الطلاب:", options: ["لا يدرسون", "ينجحون دون اختبار", "ينفذون الواجبات داخل الصف", "يشاهدون أفلام"], correct: 2 },
+    { q: "يتكون التعليم المعكوس من (الفيديو، التفاعل، و):", options: ["الامتحان", "الرحلات", "المعمل", "الملاحظة والتغذية الراجعة"], correct: 3 },
+    { q: "من أدوات التأليف في التعليم المعكوس:", options: ["Camtasia", "الألعاب", "الحسابات", "المتصفحات"], correct: 0 },
+    { q: "في التعليم المعكوس التقليدي يشارك المتعلم في:", options: ["مشاهدة الفيديو", "النوم", "أنشطة وتكليفات داخل الصف", "النسخ"], correct: 2 },
+    { q: "الاستراتيجية القائمة على الإتقان هي:", options: ["التقليدي", "القائم على المشكلة", "الاستقصاء", "المعكوس للإتقان"], correct: 3 },
+    { q: "في تدريس الأقران يتم توجيه الطلاب لـ:", options: ["الاستفادة من زملائهم", "العقاب", "الخرج", "الحفظ"], correct: 0 },
+    { q: "يتم إمداد الطلاب بأدوات البحث في:", options: ["التقليدي", "الإتقان", "المعكوس القائم على الاستقصاء", "الحفظ"], correct: 2 },
+    { q: "يهدف المعكوس القائم على المشكلة إلى:", options: ["الشجار", "الهروب", "التلقين", "صناعة القرار وحل المشكلات"], correct: 3 },
+    { q: "تبدأ دورة التعلم الخماسية بمرحلة:", options: ["الإثارة", "التفسير", "التوسع", "التقويم"], correct: 0 },
+    { q: "يتمركز دور المعلم في مرحلة:", options: ["الإثارة", "التوسع", "التفسير", "التقويم"], correct: 2 },
+    { q: "تهدف مرحلة التوسع إلى:", options: ["النسيان", "الإطالة", "التقليل", "ربط الخبرات وتوظيفها"], correct: 3 },
+    { q: "الهدف النهائي من التعليم المعكوس هو تنمية:", options: ["البدنية", "الخطية", "التجارية", "المهارات العقلية العليا"], correct: 3 }
+];
+let index = 0;
+let score = 0;
+
+function updateProgress() {
+    const progress = ((index + 1) / questions.length) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    document.getElementById('progressText').textContent = `السؤال ${index + 1} من ${questions.length}`;
+}
+
+function loadQuestion() {
+    document.getElementById("nextBtn").style.display = "none";
+    document.getElementById("feedback").style.display = "none";
+
+    const q = questions[index];
+    
+    // إضافة رقم السؤال
+    let questionNumber = index + 1;
+    
+    document.getElementById("questionText").innerHTML = `
+        <span class="question-number">السؤال ${questionNumber}</span><br>
+        ${q.q}
+    `;
+    
+    updateProgress();
+
+    let html = '';
+    
+    // أسئلة اختيار من متعدد
+    const letters = ['أ', 'ب', 'ج', 'د'];
+    q.options.forEach((option, i) => {
+        html += `
+            <div class="option" onclick="selectOption(${i})">
+                <div class="option-letter">${letters[i]}</div>
+                ${option}
+            </div>
+        `;
+    });
+
+    document.getElementById("options").innerHTML = html;
+}
+
+function selectOption(i) {
+    const q = questions[index];
+    const feedback = document.getElementById("feedback");
+    const all = document.querySelectorAll(".option");
+
+    all.forEach(el => el.style.pointerEvents = "none");
+
+    if (i === q.correct) {
+        score++;
+        feedback.textContent = "✔ إجابة صحيحة";
+        feedback.style.background = "linear-gradient(135deg, #c8ffce 0%, #b0ffb8 100%)";
+        feedback.style.color = "#1b8a2c";
+        feedback.style.border = "2px solid #1b8a2c";
+    } else {
+        feedback.textContent = "❌ إجابة خاطئة";
+        feedback.style.background = "linear-gradient(135deg, #ffcccc 0%, #ffb8b8 100%)";
+        feedback.style.color = "#b30000";
+        feedback.style.border = "2px solid #b30000";
+    }
+
+    document.getElementById("score").textContent = `النتيجة: ${score}`;
+    feedback.style.display = "block";
+
+    // إضافة التمييز البصري للإجابات
+    all.forEach((el, idx) => {
+        if (idx === q.correct) {
+            el.classList.add("correct");
+        } else if (idx === i && idx !== q.correct) {
+            el.classList.add("wrong");
+        }
+    });
+
+    document.getElementById("nextBtn").style.display = "block";
+    
+    // التمرير التلقائي للأسفل لعرض النتيجة
+    setTimeout(() => {
+        feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 300);
+}
+
+function nextQuestion() {
+    index++;
+    
+    if (index === questions.length) {
+        showResult();
+    } else {
+        loadQuestion();
+        // التمرير التلقائي للأعلى للسؤال الجديد
+        document.getElementById("questionText").scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function showResult() {
+    document.getElementById("questionText").style.display = "none";
+    document.getElementById("options").style.display = "none";
+    document.getElementById("nextBtn").style.display = "none";
+    document.getElementById("feedback").style.display = "none";
+    document.getElementById("progressText").style.display = "none";
+    document.getElementById("progressBar").parentElement.style.display = "none";
+    
+    const result = document.getElementById("result");
+    result.style.display = "block";
+    
+    const percentage = Math.round((score / questions.length) * 100);
+    let message = "";
+    let emoji = "";
+    
+    if (percentage >= 90) {
+        message = "اللهم بارك، بالتوفيق";
+        emoji = "🏆";
+    } else if (percentage >= 70) {
+        message = "راجع شوية، موفق بإذن الله";
+        emoji = "😊";
+    } else if (percentage >= 50) {
+        message = "محتاج تذاكر تاني بالتوفيق";
+        emoji = "👍";
+    } else {
+        message = "ذاكر يا بيه";
+        emoji = "📚";
+    }
+    
+    result.innerHTML = `
+        <div style="font-size: 1.8rem; margin-bottom: 15px;">${emoji} انتهى الاختبار!</div>
+        <div style="font-size: 2rem; color: #1b8a2c; margin-bottom: 15px;">${score} / ${questions.length}</div>
+        <div style="font-size: 1.4rem; color: #4a64ff; margin-bottom: 15px;">${percentage}%</div>
+        <div style="font-size: 1.2rem; color: #666; margin-bottom: 20px; line-height: 1.6;">${message}</div>
+        <button onclick="location.reload()" style="
+            background: linear-gradient(135deg, #4a64ff 0%, #6a82ff 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 8px rgba(74, 100, 255, 0.3);
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 250px;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(74, 100, 255, 0.4)'" 
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 8px rgba(74, 100, 255, 0.3)'">
+            إعادة الاختبار
+        </button>
+    `;
+    
+    // التمرير التلقائي لعرض النتيجة
+    setTimeout(() => {
+        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+}
+
+// تحميل السؤال الأول
+loadQuestion();
+
+// إضافة دعم للزر الخلفي في المتصفح
+window.addEventListener('popstate', function(event) {
+    if (index > 0) {
+        index--;
+        loadQuestion();
+    }
+});
+
+// إضافة دعم للأزرار الافتراضية
+document.addEventListener('keydown', function(event) {
+    // اختصار لوحة المفاتيح لأسئلة الاختيار من متعدد
+    if (event.key === '1' || event.key === 'a' || event.key === 'أ') {
+        document.querySelectorAll('.option')[0]?.click();
+    } else if (event.key === '2' || event.key === 'b' || event.key === 'ب') {
+        document.querySelectorAll('.option')[1]?.click();
+    } else if (event.key === '3' || event.key === 'c' || event.key === 'ج') {
+        document.querySelectorAll('.option')[2]?.click();
+    } else if (event.key === '4' || event.key === 'd' || event.key === 'د') {
+        document.querySelectorAll('.option')[3]?.click();
+    }
+    
+    // زر الإدخال للسؤال التالي
+    if (event.key === 'Enter' && document.getElementById('nextBtn').style.display === 'block') {
+        document.getElementById('nextBtn').click();
+    }
+});
+</script>
+
+</body>
+</html>
