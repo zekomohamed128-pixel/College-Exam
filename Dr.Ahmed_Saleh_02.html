@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار التعلم المدمج</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    font-family:"Cairo",Arial,sans-serif;
+    background:linear-gradient(135deg,#eef2ff,#e6eeff);
+    min-height:100vh;
+    padding:15px;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    overflow-y:auto;
+}
+
+.box{
+    background:#fff;
+    width:100%;
+    max-width:600px;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+h2{text-align:center;margin-bottom:10px}
+
+/* ===== عداد الأسئلة ===== */
+.progress-text{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:8px;
+    color:#4a64ff;
+}
+
+.progress-bar{
+    width:100%;
+    height:8px;
+    background:#e0e0e0;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:15px;
+}
+
+.progress{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#4a64ff,#6a82ff);
+    transition:.3s;
+}
+/* ======================= */
+
+#score{
+    text-align:center;
+    font-size:18px;
+    padding:10px;
+    margin-bottom:15px;
+    background:#f3f6ff;
+    border-radius:10px;
+    font-weight:bold;
+    color:#4a64ff;
+}
+
+.question{
+    background:#f8faff;
+    padding:15px;
+    border-radius:15px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.options-container{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.option{
+    background:#e8edff;
+    padding:18px;
+    border-radius:12px;
+    text-align:center;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.option:hover{background:#d9e0ff}
+
+.option.correct{background:#b6ffb6;color:#1b8a2c}
+.option.wrong{background:#ffb6b6;color:#b30000}
+
+#feedback{
+    display:none;
+    text-align:center;
+    font-weight:bold;
+    margin-top:15px;
+    padding:12px;
+    border-radius:10px;
+}
+
+button{
+    width:100%;
+    padding:16px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#nextBtn{
+    background:linear-gradient(135deg,#4a64ff,#6a82ff);
+    color:#fff;
+    display:none;
+}
+
+#prevBtn{
+    background:linear-gradient(135deg,#6c757d,#868e96);
+    color:#fff;
+    display:none;
+}
+
+#result{
+    display:none;
+    margin-top:20px;
+    padding:20px;
+    background:#d4ffd6;
+    border-radius:15px;
+    text-align:center;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2> استراتيجيات التدريس(Nadeen_Harpy)</h2>
+
+<!-- عداد الأسئلة -->
+<div class="progress-text" id="progressText"></div>
+<div class="progress-bar">
+    <div class="progress" id="progressBar"></div>
+</div>
+
+<div id="score">النتيجة: 0</div>
+
+<div class="question" id="questionText"></div>
+<div class="options-container" id="options"></div>
+
+<div id="feedback"></div>
+
+<button id="nextBtn" onclick="nextQuestion()">السؤال التالي</button>
+<button id="prevBtn" onclick="prevQuestion()">السؤال السابق</button>
+
+<div id="result"></div>
+</div>
+
+<script>
+const questions = [
+    {
+        q: "اقترح دكتور أحمد صالح على بعض الطلاب التسجيل في منصة Class Companion، وهي منصة تحلل تفاعل الطلاب في المحاضرات السابقة وتقدم توصيات للطلاب حول الدروس التالية. ما هي طريقة أو استراتيجية التدريس التي استخدمها الدكتور؟",
+        options: ["التعلم التكيفي", "الفصول الذكية", "التعلم المدمج", "التعلم القائم على البيانات"],
+        correct: 2 // التعلم المدمج
+    },
+    {
+        q: "قام دكتور نادر ببناء مقرر للتعلم الإلكتروني عبر نظام Century Tech، وهو نظام يعتمد على تحليل أداء الطلاب لحظة بلحظة ويقدم محتوى يناسب كل طالب. ما هي طريقة أو استراتيجية التدريس المستخدمة؟",
+        options: ["الفصول الذكية", "التعلم التكيفي", "التعلم المدمج"],
+        correct: 1 // التعلم التكيفي
+    },
+    {
+        q: "تُستخدم أجهزة الاستشعار عن بُعد لجمع بيانات عن تركيز الطالب وحركته داخل الفصل. ما نوع التعلم المستخدم؟",
+        options: ["التعلم القائم على البيانات", "الفصول الذكية", "التعلم المدمج", "التعلم الذاتي"],
+        correct: 1 // الفصول الذكية
+    },
+    {
+        q: "تستعين المدارس في اليابان بالروبوت الذكي Pepper كأداة لمساعدة المعلم داخل الفصل. أي استراتيجية تطبقها اليابان؟",
+        options: ["التعلم القائم على الإبداع", "التعليم بالروبوتات", "التعليم المفتوح القائم على الموارد", "التعلم المدمج"],
+        correct: 1 // التعليم بالروبوتات
+    },
+    {
+        q: "استراتيجية تتجه نحو التعلم عبر الموارد التعليمية المفتوحة والمقررات الضخمة. ما هي هذه الاستراتيجية؟",
+        options: ["التعلم التكيفي", "الفصول الذكية", "التعليم المفتوح القائم على الموارد", "التعلم القائم على البيانات"],
+        correct: 2 // التعليم المفتوح القائم على الموارد
+    },
+    {
+        q: "طلبت دكتورة ريهام من طلاب الفرقة الثالثة بقسم تكنولوجيا التعليم التقسيم إلى مجموعات، ومطلوب من كل مجموعة عمل عرض تقديمي ذكي. ما الاستراتيجية المستخدمة؟",
+        options: ["التعلم القائم على الألعاب", "التعلم المدمج", "التعلم بالذكاء الاصطناعي التوليدي"],
+        correct: 2 // التعلم بالذكاء الاصطناعي التوليدي
+    },
+    {
+        q: "استخدم دكتور حمدي نظم Learning Analytics Dashboards لتحليل سلوك الطلاب على منصة Edmodo. ما الاستراتيجية المستخدمة؟",
+        options: ["التعلم المدمج", "الفصول الذكية", "التعلم القائم على البيانات"],
+        correct: 2 // التعلم القائم على البيانات
+    },
+    {
+        q: "تسهم في رفع التفاعل، وتحسين الانتباه، وتقديم تعليم فوري. ما الاستراتيجية المقصودة؟",
+        options: ["الفصول الذكية", "التعليم التكيفي", "التعليم المدمج"],
+        correct: 0 // الفصول الذكية
+    },
+    {
+        q: "يعد من أقوى تطبيقات الذكاء الاصطناعي في طرق واستراتيجيات التدريس. ما هو؟",
+        options: ["التعلم المقلوب", "التعلم المخصص", "التعلم النشط"],
+        correct: 1 // التعلم المخصص
+    },
+    {
+        q: "قامت دكتورة أسماء بعمل نشاط تفاعلي للطلاب واستخدمت أداة Kahoot. ما الاستراتيجية المستخدمة؟",
+        options: ["التعلم المقلوب", "التعلم النشط", "التعلم المخصص"],
+        correct: 1 // التعلم النشط
+    },
+    {
+        q: "من التحديات التي لا بد من التعامل معها بحذر:",
+        options: ["زيادة التفاعل بين الطالب والمحتوى", "الحاجة إلى تأهيل المعلمين لاستخدام الأدوات الذكية بفاعلية", "تخصيص التعلم بما يناسب قدرات كل طالب"],
+        correct: 1 // الحاجة إلى تأهيل المعلمين لاستخدام الأدوات الذكية بفاعلية
+    },
+    {
+        q: "من ملامح المعلم المستقبلي يكون:",
+        options: ["مصمم خبرات ذكية", "ناقل للمعرفة", "مصدر أساسي للمعلومة"],
+        correct: 0 // مصمم خبرات ذكية
+    }
+];
+
+let index = 0;
+let score = 0;
+let userAnswers = Array(questions.length).fill(null);
+
+function updateProgress(){
+    document.getElementById("progressText").textContent =
+        `السؤال ${index+1} من ${questions.length}`;
+
+    document.getElementById("progressBar").style.width =
+        ((index+1)/questions.length)*100 + "%";
+}
+
+function loadQuestion(){
+    updateProgress();
+
+    const q = questions[index];
+    document.getElementById("questionText").textContent = q.q;
+    document.getElementById("feedback").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+
+    document.getElementById("prevBtn").style.display = index>0?"block":"none";
+
+    // إنشاء خيارات متعددة
+    let optionsHTML = '';
+    q.options.forEach((option, i) => {
+        optionsHTML += `<div class="option" onclick="selectOption(${i})">${option}</div>`;
+    });
+    document.getElementById("options").innerHTML = optionsHTML;
+
+    if(userAnswers[index] !== null){
+        showSavedAnswer();
+    }
+}
+
+function selectOption(i){
+    if(userAnswers[index] !== null) return;
+
+    userAnswers[index] = i;
+    const correct = questions[index].correct;
+    const options = document.querySelectorAll(".option");
+
+    if(i === correct){
+        score++;
+        document.getElementById("feedback").textContent="✔ إجابة صحيحة";
+        document.getElementById("feedback").style.color="#1b8a2c";
+        document.getElementById("feedback").style.background="#b6ffb6";
+    }else{
+        document.getElementById("feedback").textContent="❌ إجابة خاطئة";
+        document.getElementById("feedback").style.color="#b30000";
+        document.getElementById("feedback").style.background="#ffb6b6";
+    }
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        else if(idx === i) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("score").textContent=`النتيجة: ${score}`;
+    document.getElementById("feedback").style.display="block";
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function showSavedAnswer(){
+    const correct = questions[index].correct;
+    const selected = userAnswers[index];
+    const options = document.querySelectorAll(".option");
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        if(idx === selected && idx !== correct) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("feedback").style.display="block";
+    
+    if(selected === correct) {
+        document.getElementById("feedback").textContent = "✔ إجابة صحيحة";
+        document.getElementById("feedback").style.color="#1b8a2c";
+        document.getElementById("feedback").style.background="#b6ffb6";
+    } else {
+        document.getElementById("feedback").textContent = "❌ إجابة خاطئة";
+        document.getElementById("feedback").style.color="#b30000";
+        document.getElementById("feedback").style.background="#ffb6b6";
+    }
+
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function nextQuestion(){
+    index++;
+    if(index === questions.length){
+        showResult();
+    }else{
+        loadQuestion();
+    }
+}
+
+function prevQuestion(){
+    if(index>0){
+        index--;
+        loadQuestion();
+    }
+}
+
+function showResult(){
+    document.querySelector(".progress-bar").style.display="none";
+    document.getElementById("progressText").style.display="none";
+    document.getElementById("questionText").style.display="none";
+    document.getElementById("options").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+    document.getElementById("prevBtn").style.display="none";
+    document.getElementById("feedback").style.display="none";
+
+    const percent = Math.round((score/questions.length)*100);
+    document.getElementById("result").style.display="block";
+    document.getElementById("result").innerHTML = `
+        <h3>انتهى الاختبار</h3>
+        <p style="font-size: 24px; margin: 10px 0;">${score}/${questions.length}</p>
+        <p style="font-size: 20px;">نسبة النجاح: ${percent}%</p>
+    `;
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
