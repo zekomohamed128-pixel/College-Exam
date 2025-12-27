@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار ذاكرة الحاسوب والتخزين</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    font-family:"Cairo",Arial,sans-serif;
+    background:linear-gradient(135deg,#eef2ff,#e6eeff);
+    min-height:100vh;
+    padding:15px;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    overflow-y:auto;
+}
+
+.box{
+    background:#fff;
+    width:100%;
+    max-width:600px;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+h2{text-align:center;margin-bottom:10px}
+
+/* ===== عداد الأسئلة ===== */
+.progress-text{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:8px;
+    color:#4a64ff;
+}
+
+.progress-bar{
+    width:100%;
+    height:8px;
+    background:#e0e0e0;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:15px;
+}
+
+.progress{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#4a64ff,#6a82ff);
+    transition:.3s;
+}
+/* ======================= */
+
+#score{
+    text-align:center;
+    font-size:18px;
+    padding:10px;
+    margin-bottom:15px;
+    background:#f3f6ff;
+    border-radius:10px;
+    font-weight:bold;
+    color:#4a64ff;
+}
+
+.question{
+    background:#f8faff;
+    padding:15px;
+    border-radius:15px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.options-container{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.option{
+    background:#e8edff;
+    padding:18px;
+    border-radius:12px;
+    text-align:center;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.option:hover{background:#d9e0ff}
+
+.option.correct{background:#b6ffb6;color:#1b8a2c}
+.option.wrong{background:#ffb6b6;color:#b30000}
+
+#feedback{
+    display:none;
+    text-align:center;
+    font-weight:bold;
+    margin-top:15px;
+    padding:12px;
+    border-radius:10px;
+}
+
+button{
+    width:100%;
+    padding:16px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#nextBtn{
+    background:linear-gradient(135deg,#4a64ff,#6a82ff);
+    color:#fff;
+    display:none;
+}
+
+#prevBtn{
+    background:linear-gradient(135deg,#6c757d,#868e96);
+    color:#fff;
+    display:none;
+}
+
+#result{
+    display:none;
+    margin-top:20px;
+    padding:20px;
+    background:#d4ffd6;
+    border-radius:15px;
+    text-align:center;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2>Esraa_Emad</h2>
+
+<!-- عداد الأسئلة -->
+<div class="progress-text" id="progressText"></div>
+<div class="progress-bar">
+    <div class="progress" id="progressBar"></div>
+</div>
+
+<div id="score">النتيجة: 0</div>
+
+<div class="question" id="questionText"></div>
+<div class="options-container" id="options"></div>
+
+<div id="feedback"></div>
+
+<button id="nextBtn" onclick="nextQuestion()">السؤال التالي</button>
+<button id="prevBtn" onclick="prevQuestion()">السؤال السابق</button>
+
+<div id="result"></div>
+</div>
+
+<script>
+const questions = [
+    {
+        q: "أي نوع ذاكرة يستخدم لتخزين نظام الـ BIOS؟",
+        options: [
+            "RAM",
+            "ROM",
+            "SSD"
+        ],
+        correct: 1 // ROM
+    },
+    {
+        q: "عند شراء لابتوب جديد، ما هي الذاكرة التي تجعل الجهاز يفتح في 10 ثوانٍ؟",
+        options: [
+            "HDD",
+            "RAM كبيرة",
+            "SSD"
+        ],
+        correct: 2 // SSD
+    },
+    {
+        q: "كم يبلغ حجم الـ Sector التقليدي في الهارد ديسك؟",
+        options: [
+            "512 بايت",
+            "512 ميجا بايت",
+            "512 جيجا بايت"
+        ],
+        correct: 0 // 512 بايت
+    },
+    {
+        q: 'ما هو المحرك الذي يستخدم "المغناطيس والملفات" لتحريك ذراع القراءة بسرعة؟',
+        options: [
+            "Stepper Motor",
+            "Voice Coil Actuator",
+            "DC Motor"
+        ],
+        correct: 1 // Voice Coil Actuator
+    },
+    {
+        q: 'أي من هذه الوسائط "ميكانيكي" ويحتوي على أجزاء تتحرك فعلياً؟',
+        options: [
+            "RAM",
+            "ROM",
+            "HDD"
+        ],
+        correct: 2 // HDD
+    },
+    {
+        q: "تسمى مجموعة المسارات (Tracks) التي لها نفس القطر على عدة أسطوانات بـ:",
+        options: [
+            "السلندر (Cylinder)",
+            "الكلوستر (Cluster)",
+            "القطاع (Sector)"
+        ],
+        correct: 0 // السلندر (Cylinder)
+    },
+    {
+        q: 'عندما تزيد سعة "الرامات" في جهازك، فإن ذلك يؤدي إلى:',
+        options: [
+            "زيادة مساحة تخزين الصور",
+            "القدرة على فتح برامج كثيرة في وقت واحد دون تهنيج",
+            "زيادة سرعة الإنترنت"
+        ],
+        correct: 1 // القدرة على فتح برامج كثيرة في وقت واحد دون تهنيج
+    },
+    {
+        q: 'تُسمى الذاكرة التي "تتطاير" بياناتها عند قفل الجهاز:',
+        options: [
+            "Persistent Memory",
+            "Volatile Memory",
+            "Flash Memory"
+        ],
+        correct: 1 // Volatile Memory
+    },
+    {
+        q: "محرك الخطوة (Stepper Motor) كان يعاني في الهاردات القديمة من مشكلة:",
+        options: [
+            "استهلاك الكهرباء",
+            "التمدد الحراري للأسطوانات وعدم دقة الوصول",
+            "صغر حجمه"
+        ],
+        correct: 1 // التمدد الحراري للأسطوانات وعدم دقة الوصول
+    },
+    {
+        q: "ما هو الـ Cluster؟",
+        options: [
+            "أصغر وحدة فيزيائية على الهارد",
+            "مجموعة من القطاعات (Sectors) يتعامل معها الويندوز ككتلة واحدة",
+            "نوع من أنواع الرامات"
+        ],
+        correct: 1 // مجموعة من القطاعات (Sectors) يتعامل معها الويندوز ككتلة واحدة
+    }
+];
+
+let index = 0;
+let score = 0;
+let userAnswers = Array(questions.length).fill(null);
+
+function updateProgress(){
+    document.getElementById("progressText").textContent =
+        `السؤال ${index+1} من ${questions.length}`;
+
+    document.getElementById("progressBar").style.width =
+        ((index+1)/questions.length)*100 + "%";
+}
+
+function loadQuestion(){
+    updateProgress();
+
+    const q = questions[index];
+    document.getElementById("questionText").textContent = q.q;
+    document.getElementById("feedback").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+
+    document.getElementById("prevBtn").style.display = index>0?"block":"none";
+
+    // إنشاء خيارات متعددة
+    let optionsHTML = '';
+    q.options.forEach((option, i) => {
+        optionsHTML += `<div class="option" onclick="selectOption(${i})">${option}</div>`;
+    });
+    document.getElementById("options").innerHTML = optionsHTML;
+
+    if(userAnswers[index] !== null){
+        showSavedAnswer();
+    }
+}
+
+function selectOption(i){
+    if(userAnswers[index] !== null) return;
+
+    userAnswers[index] = i;
+    const correct = questions[index].correct;
+    const options = document.querySelectorAll(".option");
+
+    if(i === correct){
+        score++;
+        document.getElementById("feedback").textContent="✔ إجابة صحيحة";
+        document.getElementById("feedback").style.color="#1b8a2c";
+        document.getElementById("feedback").style.background="#b6ffb6";
+    }else{
+        document.getElementById("feedback").textContent="❌ إجابة خاطئة";
+        document.getElementById("feedback").style.color="#b30000";
+        document.getElementById("feedback").style.background="#ffb6b6";
+    }
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        else if(idx === i) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("score").textContent=`النتيجة: ${score}`;
+    document.getElementById("feedback").style.display="block";
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function showSavedAnswer(){
+    const correct = questions[index].correct;
+    const selected = userAnswers[index];
+    const options = document.querySelectorAll(".option");
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        if(idx === selected && idx !== correct) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("feedback").style.display="block";
+    
+    if(selected === correct) {
+        document.getElementById("feedback").textContent = "✔ إجابة صحيحة";
+        document.getElementById("feedback").style.color="#1b8a2c";
+        document.getElementById("feedback").style.background="#b6ffb6";
+    } else {
+        document.getElementById("feedback").textContent = "❌ إجابة خاطئة";
+        document.getElementById("feedback").style.color="#b30000";
+        document.getElementById("feedback").style.background="#ffb6b6";
+    }
+
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function nextQuestion(){
+    index++;
+    if(index === questions.length){
+        showResult();
+    }else{
+        loadQuestion();
+    }
+}
+
+function prevQuestion(){
+    if(index>0){
+        index--;
+        loadQuestion();
+    }
+}
+
+function showResult(){
+    document.querySelector(".progress-bar").style.display="none";
+    document.getElementById("progressText").style.display="none";
+    document.getElementById("questionText").style.display="none";
+    document.getElementById("options").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+    document.getElementById("prevBtn").style.display="none";
+    document.getElementById("feedback").style.display="none";
+
+    const percent = Math.round((score/questions.length)*100);
+    document.getElementById("result").style.display="block";
+    document.getElementById("result").innerHTML = `
+        <h3>انتهى الاختبار</h3>
+        <p style="font-size: 24px; margin: 10px 0;">${score}/${questions.length}</p>
+        <p style="font-size: 20px;">نسبة النجاح: ${percent}%</p>
+    `;
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
