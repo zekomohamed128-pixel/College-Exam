@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار ذاكرة الحاسوب والتخزين</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    font-family:"Cairo",Arial,sans-serif;
+    background:linear-gradient(135deg,#eef2ff,#e6eeff);
+    min-height:100vh;
+    padding:15px;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    overflow-y:auto;
+}
+
+.box{
+    background:#fff;
+    width:100%;
+    max-width:600px;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+h2{text-align:center;margin-bottom:10px}
+
+/* ===== عداد الأسئلة ===== */
+.progress-text{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:8px;
+    color:#4a64ff;
+}
+
+.progress-bar{
+    width:100%;
+    height:8px;
+    background:#e0e0e0;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:15px;
+}
+
+.progress{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#4a64ff,#6a82ff);
+    transition:.3s;
+}
+/* ======================= */
+
+#score{
+    text-align:center;
+    font-size:18px;
+    padding:10px;
+    margin-bottom:15px;
+    background:#f3f6ff;
+    border-radius:10px;
+    font-weight:bold;
+    color:#4a64ff;
+}
+
+.question{
+    background:#f8faff;
+    padding:15px;
+    border-radius:15px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.options-container{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.option{
+    background:#e8edff;
+    padding:18px;
+    border-radius:12px;
+    text-align:center;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.option:hover{background:#d9e0ff}
+
+.option.correct{background:#b6ffb6;color:#1b8a2c}
+.option.wrong{background:#ffb6b6;color:#b30000}
+
+#feedback{
+    display:none;
+    text-align:center;
+    font-weight:bold;
+    margin-top:15px;
+    padding:12px;
+    border-radius:10px;
+}
+
+button{
+    width:100%;
+    padding:16px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#nextBtn{
+    background:linear-gradient(135deg,#4a64ff,#6a82ff);
+    color:#fff;
+    display:none;
+}
+
+#prevBtn{
+    background:linear-gradient(135deg,#6c757d,#868e96);
+    color:#fff;
+    display:none;
+}
+
+#result{
+    display:none;
+    margin-top:20px;
+    padding:20px;
+    background:#d4ffd6;
+    border-radius:15px;
+    text-align:center;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2>Esraa_Emad</h2>
+
+<!-- عداد الأسئلة -->
+<div class="progress-text" id="progressText"></div>
+<div class="progress-bar">
+    <div class="progress" id="progressBar"></div>
+</div>
+
+<div id="score">النتيجة: 0</div>
+
+<div class="question" id="questionText"></div>
+<div class="options-container" id="options"></div>
+
+<div id="feedback"></div>
+
+<button id="nextBtn" onclick="nextQuestion()">السؤال التالي</button>
+<button id="prevBtn" onclick="prevQuestion()">السؤال السابق</button>
+
+<div id="result"></div>
+</div>
+
+<script>
+const questions = [
+    {
+        q: "أي نوع من الـ SSD يأتي بنفس حجم وشكل الهارد ديسك الخاص باللابتوب (2.5 بوصة)؟",
+        options: [
+            "M.2 NVMe",
+            "SATA SSD",
+            "mSATA"
+        ],
+        correct: 1 // SATA SSD
+    },
+    {
+        q: "ما هو البروتوكول الذي يسمح للـ SSD بالوصول لسرعات خرافية تتخطى 3500 ميجا/ثانية؟",
+        options: [
+            "SATA III",
+            "NVMe",
+            "IDE"
+        ],
+        correct: 1 // NVMe
+    },
+    {
+        q: "من حيث الشكل، الـ M.2 SSD يشبه إلى حد كبير:",
+        options: [
+            "علبة الكبريت",
+            "شريحة الرام الصغيرة (أو اللبانة)",
+            "السي دي (CD)"
+        ],
+        correct: 1 // شريحة الرام الصغيرة (أو اللبانة)
+    },
+    {
+        q: "من هو الأسرع على الإطلاق في هذه الأنواع؟",
+        options: [
+            "SATA SSD",
+            "M.2 SATA",
+            "M.2 NVMe (PCIe Gen4)"
+        ],
+        correct: 2 // M.2 NVMe (PCIe Gen4)
+    },
+    {
+        q: "منفذ الـ SATA III التقليدي له حدود سرعة قصوى لا تتعدى:",
+        options: [
+            "600 ميجا/ثانية",
+            "2000 ميجا/ثانية",
+            "5000 ميجا/ثانية"
+        ],
+        correct: 0 // 600 ميجا/ثانية
+    },
+    {
+        q: "إذا كان المذربورد (Motherboard) قديم جداً، فغالباً النوع الوحيد الذي سيعمل عليه هو:",
+        options: [
+            "NVMe",
+            "2.5-inch SATA SSD",
+            "PCIe Gen5"
+        ],
+        correct: 1 // 2.5-inch SATA SSD
+    },
+    {
+        q: "تقنية الـ NVMe تعتمد في نقل البيانات على مسارات الـ:",
+        options: [
+            "USB",
+            "PCI Express (PCIe)",
+            "الكابلات النحاسية الخارجية"
+        ],
+        correct: 1 // PCI Express (PCIe)
+    },
+    {
+        q: "ماذا يعني الرمز 'M.2' في عالم الهاردات؟",
+        options: [
+            "سرعة النقل",
+            "حجم وشكل المنفذ (Form Factor)",
+            "نوع الشركة المصنعة"
+        ],
+        correct: 1 // حجم وشكل المنفذ (Form Factor)
+    },
+    {
+        q: "أي نوع SSD يحتاج إلى كابلات داتا وباور لتوصيله بالكمبيوتر؟",
+        options: [
+            "M.2 NVMe",
+            "2.5-inch SATA",
+            "الاثنين معاً"
+        ],
+        correct: 1 // 2.5-inch SATA
+    },
+    {
+        q: "أيهما يولد حرارة أكبر أثناء العمل المكثف؟",
+        options: [
+            "SATA SSD",
+            "NVMe SSD",
+            "HDD"
+        ],
+        correct: 1 // NVMe SSD
+    }
+];
+
+let index = 0;
+let score = 0;
+let userAnswers = Array(questions.length).fill(null);
+
+function updateProgress(){
+    document.getElementById("progressText").textContent =
+        `السؤال ${index+1} من ${questions.length}`;
+
+    document.getElementById("progressBar").style.width =
+        ((index+1)/questions.length)*100 + "%";
+}
+
+function loadQuestion(){
+    updateProgress();
+
+    const q = questions[index];
+    document.getElementById("questionText").textContent = q.q;
+    document.getElementById("feedback").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+
+    document.getElementById("prevBtn").style.display = index>0?"block":"none";
+
+    // إنشاء خيارات متعددة
+    let optionsHTML = '';
+    q.options.forEach((option, i) => {
+        optionsHTML += `<div class="option" onclick="selectOption(${i})">${option}</div>`;
+    });
+    document.getElementById("options").innerHTML = optionsHTML;
+
+    if(userAnswers[index] !== null){
+        showSavedAnswer();
+    }
+}
+
+function selectOption(i){
+    if(userAnswers[index] !== null) return;
+
+    userAnswers[index] = i;
+    const correct = questions[index].correct;
+    const options = document.querySelectorAll(".option");
+
+    if(i === correct){
+        score++;
+        document.getElementById("feedback").textContent="✔ إجابة صحيحة";
+        document.getElementById("feedback").style.color="#1b8a2c";
+        document.getElementById("feedback").style.background="#b6ffb6";
+    }else{
+        document.getElementById("feedback").textContent="❌ إجابة خاطئة";
+        document.getElementById("feedback").style.color="#b30000";
+        document.getElementById("feedback").style.background="#ffb6b6";
+    }
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        else if(idx === i) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("score").textContent=`النتيجة: ${score}`;
+    document.getElementById("feedback").style.display="block";
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function showSavedAnswer(){
+    const correct = questions[index].correct;
+    const selected = userAnswers[index];
+    const options = document.querySelectorAll(".option");
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        if(idx === selected && idx !== correct) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("feedback").style.display="block";
+    
+    if(selected === correct) {
+        document.getElementById("feedback").textContent = "✔ إجابة صحيحة";
+        document.getElementById("feedback").style.color="#1b8a2c";
+        document.getElementById("feedback").style.background="#b6ffb6";
+    } else {
+        document.getElementById("feedback").textContent = "❌ إجابة خاطئة";
+        document.getElementById("feedback").style.color="#b30000";
+        document.getElementById("feedback").style.background="#ffb6b6";
+    }
+
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function nextQuestion(){
+    index++;
+    if(index === questions.length){
+        showResult();
+    }else{
+        loadQuestion();
+    }
+}
+
+function prevQuestion(){
+    if(index>0){
+        index--;
+        loadQuestion();
+    }
+}
+
+function showResult(){
+    document.querySelector(".progress-bar").style.display="none";
+    document.getElementById("progressText").style.display="none";
+    document.getElementById("questionText").style.display="none";
+    document.getElementById("options").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+    document.getElementById("prevBtn").style.display="none";
+    document.getElementById("feedback").style.display="none";
+
+    const percent = Math.round((score/questions.length)*100);
+    document.getElementById("result").style.display="block";
+    document.getElementById("result").innerHTML = `
+        <h3>انتهى الاختبار</h3>
+        <p style="font-size: 24px; margin: 10px 0;">${score}/${questions.length}</p>
+        <p style="font-size: 20px;">نسبة النجاح: ${percent}%</p>
+    `;
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
