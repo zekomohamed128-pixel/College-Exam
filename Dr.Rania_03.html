@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار التعلم المدمج</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    font-family:"Cairo",Arial,sans-serif;
+    background:linear-gradient(135deg,#eef2ff,#e6eeff);
+    min-height:100vh;
+    padding:15px;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    overflow-y:auto;
+}
+
+.box{
+    background:#fff;
+    width:100%;
+    max-width:600px;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+h2{text-align:center;margin-bottom:10px}
+
+/* ===== عداد الأسئلة ===== */
+.progress-text{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:8px;
+    color:#4a64ff;
+}
+
+.progress-bar{
+    width:100%;
+    height:8px;
+    background:#e0e0e0;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:15px;
+}
+
+.progress{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#4a64ff,#6a82ff);
+    transition:.3s;
+}
+/* ======================= */
+
+#score{
+    text-align:center;
+    font-size:18px;
+    padding:10px;
+    margin-bottom:15px;
+    background:#f3f6ff;
+    border-radius:10px;
+    font-weight:bold;
+    color:#4a64ff;
+}
+
+.question{
+    background:#f8faff;
+    padding:15px;
+    border-radius:15px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.options-container{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.option{
+    background:#e8edff;
+    padding:18px;
+    border-radius:12px;
+    text-align:center;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.option:hover{background:#d9e0ff}
+
+.option.correct{background:#b6ffb6;color:#1b8a2c}
+.option.wrong{background:#ffb6b6;color:#b30000}
+
+#feedback{
+    display:none;
+    text-align:center;
+    font-weight:bold;
+    margin-top:15px;
+    padding:12px;
+    border-radius:10px;
+}
+
+button{
+    width:100%;
+    padding:16px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#nextBtn{
+    background:linear-gradient(135deg,#4a64ff,#6a82ff);
+    color:#fff;
+    display:none;
+}
+
+#prevBtn{
+    background:linear-gradient(135deg,#6c757d,#868e96);
+    color:#fff;
+    display:none;
+}
+
+#result{
+    display:none;
+    margin-top:20px;
+    padding:20px;
+    background:#d4ffd6;
+    border-radius:15px;
+    text-align:center;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2> Dr.Rania_EL-Gammal</h2>
+
+<!-- عداد الأسئلة -->
+<div class="progress-text" id="progressText"></div>
+<div class="progress-bar">
+    <div class="progress" id="progressBar"></div>
+</div>
+
+<div id="score">النتيجة: 0</div>
+
+<div class="question" id="questionText"></div>
+<div class="options-container" id="options"></div>
+
+<div id="feedback"></div>
+
+<button id="nextBtn" onclick="nextQuestion()">السؤال التالي</button>
+<button id="prevBtn" onclick="prevQuestion()">السؤال السابق</button>
+
+<div id="result"></div>
+</div>
+
+<script>
+const questions = [
+    {
+        q: "التغير الثقافي يكون غالباً أسرع في:",
+        options: [
+            "العموميات",
+            "الخصوصيات المهنية",
+            "البديلات (المتغيرات)",
+            "الخصوصيات الطبقية"
+        ],
+        correct: 2 // البديلات (المتغيرات)
+    },
+    {
+        q: "مفهوم 'العموميات' في الثقافة يشير إلى:",
+        options: [
+            "العناصر الثقافية الشائعة لدى جميع المجتمعات",
+            "العناصر الثقافية المشتركة بين جميع أفراد المجتمع الواحد",
+            "العناصر التي يتميز بها فرد أو جماعة خاصة",
+            "العناصر التي تمثل الابتكار والتجديد"
+        ],
+        correct: 1 // العناصر الثقافية المشتركة بين جميع أفراد المجتمع الواحد
+    },
+    {
+        q: "تعتبر دراسة الأصول التاريخية للتربية مهمة للتعليم المعاصر لأنها:",
+        options: [
+            "توضح المبادئ الفلسفية التي تحدد أهداف التعليم",
+            "تقدم تحليلاً للفروق الفردية في التعلم",
+            "تساعد في فهم جذور المشكلات التعليمية الحالية وكيفية التعامل معها",
+            "تركز على القوانين البيولوجية وتأثيرها على التعلم"
+        ],
+        correct: 2 // تساعد في فهم جذور المشكلات التعليمية الحالية وكيفية التعامل معها
+    },
+    {
+        q: "يتضمن الجانب المعنوي للثقافة:",
+        options: [
+            "وسائل النقل والمباني",
+            "اللغة والعادات والقيم",
+            "التكنولوجيا والاختراعات",
+            "الغذاء والأزياء"
+        ],
+        correct: 1 // اللغة والعادات والقيم
+    },
+    {
+        q: "الأصول الفلسفية للتربية تهدف إلى:",
+        options: [
+            "دراسة الأسس الاقتصادية وتأثيرها على التعليم",
+            "تطبيق القوانين البيولوجية في تطوير المناهج الدراسية",
+            "تنظيم العملية التربوية وتوجيه أهداف التعليم بناءً على الفلسفة السائدة",
+            "تحليل مراحل النمو الفسيولوجي للمتعلمين"
+        ],
+        correct: 2 // تنظيم العملية التربوية وتوجيه أهداف التعليم بناءً على الفلسفة السائدة
+    },
+    {
+        q: "أي من المداخل التالية يُستخدم لدراسة الأصول الاجتماعية للتربية؟",
+        options: [
+            "دراسة النظام التعليمي من خلال مكوناته وعلاقاته الداخلية",
+            "التركيز على النظريات النفسية في التعلم",
+            "تحليل تاريخ التعليم عبر الفترات الزمنية المختلفة",
+            "ربط الفلسفة بالمنهج التعليمي"
+        ],
+        correct: 0 // دراسة النظام التعليمي من خلال مكوناته وعلاقاته الداخلية
+    },
+    {
+        q: "يُقصد بالثقافة المادية:",
+        options: [
+            "القيم والمعتقدات والتقاليد",
+            "الأدوات والتكنولوجيا والأشياء المادية",
+            "الفنون والموسيقى والآداب",
+            "الأديان والفلسفات فقط"
+        ],
+        correct: 1 // الأدوات والتكنولوجيا والأشياء المادية
+    },
+    {
+        q: "أي من الأصول التالية يُعتبر الأكثر ارتباطاً بتحليل الفروق الفردية بين المتعلمين؟",
+        options: [
+            "الأصول الفلسفية",
+            "الأصول النفسية",
+            "الأصول التاريخية",
+            "الأصول الثقافية"
+        ],
+        correct: 1 // الأصول النفسية
+    },
+    {
+        q: "أي من المفكرين ارتبط بفكرة التعلم مدى الحياة وتطوير الأجيال؟",
+        options: [
+            "جاك ديلور",
+            "جون ديوي",
+            "ليف فيجوتسكي",
+            "كولبرج"
+        ],
+        correct: 0 // جاك ديلور
+    },
+    {
+        q: "كيف يمكن للأصول الاقتصادية أن تؤثر على عملية التربية؟",
+        options: [
+            "من خلال دراسة المبادئ الفلسفية التي تؤثر على التعليم",
+            "من خلال توفير الموارد المادية وتحليل تأثير الفقر والغنى على التعليم",
+            "من خلال دراسة مراحل النمو الجسدي للمتعلمين",
+            "من خلال تأثير البيئة الطبيعية على النظام التعليمي"
+        ],
+        correct: 1 // من خلال توفير الموارد المادية وتحليل تأثير الفقر والغنى على التعليم
+    },
+    {
+        q: "يعتبر التركيب الذي يشمل الأساطير والمعتقدات الدينية في الثقافة:",
+        options: [
+            "التركيب التكنولوجي",
+            "التركيب الجمالي",
+            "التركيب الديني والمعتقدي",
+            "التركيب الاجتماعي"
+        ],
+        correct: 2 // التركيب الديني والمعتقدي
+    },
+    {
+        q: "ما هو المقصود بالأصول الثقافية للتربية؟",
+        options: [
+            "دراسة تأثير الفلسفة على التعليم",
+            "تحليل خصائص المتعلمين وطرق التعلم",
+            "دراسة تأثير المجتمع والثقافة على التربية",
+            "تحليل الأسس البيولوجية للتعلم"
+        ],
+        correct: 2 // دراسة تأثير المجتمع والثقافة على التربية
+    },
+    {
+        q: "أي من الخيارات التالية يعتبر من مكونات الثقافة غير المادية؟",
+        options: [
+            "الأدوات",
+            "القيم",
+            "التكنولوجيا",
+            "البنية التحتية"
+        ],
+        correct: 1 // القيم
+    },
+    {
+        q: "أي من الجوانب التالية تعتبر جزءاً من عملية التعلم مدى الحياة؟",
+        options: [
+            "التعليم الوحيد والموحد لكل الأفراد",
+            "التعليم المحدود بفترات معينة من العمر",
+            "التعلم الذاتي والتفاعلي المستمر",
+            "الإغفال عن التغيرات الاجتماعية والاقتصادية"
+        ],
+        correct: 2 // التعلم الذاتي والتفاعلي المستمر
+    },
+    {
+        q: "النمط الثقافي هو:",
+        options: [
+            "مجموعة من العادات الفردية الخاصة بالأفراد",
+            "عنصر ثقافي مادي يتم توارثه",
+            "مجموعة من العناصر الثقافية التي تتكرر بانتظام في المجتمع",
+            "الأفكار الفردية دون تعميم"
+        ],
+        correct: 2 // مجموعة من العناصر الثقافية التي تتكرر بانتظام في المجتمع
+    },
+    {
+        q: "أي من المصطلحات التالية يرتبط بشكل مباشر بالتعليم المستمر؟",
+        options: [
+            "التعليم الرسمي",
+            "التعلم الذاتي",
+            "التعليم العالي",
+            "التعليم الابتدائي"
+        ],
+        correct: 1 // التعلم الذاتي
+    },
+    {
+        q: "أي من الأصول التالية يعتمد على تطبيق نظريات علم النفس لتحسين عملية التعلم؟",
+        options: [
+            "الأصول الفلسفية",
+            "الأصول الاقتصادية",
+            "الأصول النفسية",
+            "الأصول الاجتماعية"
+        ],
+        correct: 2 // الأصول النفسية
+    },
+    {
+        q: "ما المقصود بـ 'التكيف الثقافي'؟",
+        options: [
+            "تبني الشخص العادات وثقافة المجتمع الذي يعيش فيه",
+            "التمسك بثقافة الشخص الأصلية في بيئة جديدة",
+            "رفض العناصر الثقافية المختلفة",
+            "العودة إلى الثقافة الأصلية بعد تجربة ثقافة أخرى"
+        ],
+        correct: 0 // تبني الشخص العادات وثقافة المجتمع الذي يعيش فيه
+    },
+    {
+        q: "أي من الجوانب التالية يُعتبر عاملاً مهماً في تعزيز التعلم مدى الحياة؟",
+        options: [
+            "العزلة الاجتماعية",
+            "الوصول إلى المعلومات والتكنولوجيا",
+            "الانعزال عن المجتمع",
+            "الاعتماد على التعليم التقليدي فقط"
+        ],
+        correct: 1 // الوصول إلى المعلومات والتكنولوجيا
+    },
+    {
+        q: "أي من المفاهيم التالية يصف 'عملية انتقال الثقافة من جيل إلى جيل'؟",
+        options: [
+            "التنشئة الاجتماعية",
+            "التكيف الثقافي",
+            "التعصب الثقافي",
+            "التمييز الثقافي"
+        ],
+        correct: 0 // التنشئة الاجتماعية
+    },
+    {
+        q: "من بين ما يلي ما هو أحد الأهداف الأساسية للتعليم المستمر؟",
+        options: [
+            "تخفيض مستوى التعليم في المجتمع",
+            "تعزيز الاستعداد لمواجهة التغيرات الاجتماعية والاقتصادية",
+            "فرض قيود على التعليم للأطفال فقط",
+            "الاعتماد فقط على التعليم التقليدي"
+        ],
+        correct: 1 // تعزيز الاستعداد لمواجهة التغيرات الاجتماعية والاقتصادية
+    },
+    {
+        q: "واحدة من وظائف الثقافة هي:",
+        options: [
+            "عزل الأفراد عن المجتمعات الأخرى",
+            "توفير معرفة متكاملة تساعد الأفراد في التكيف الاجتماعي",
+            "منع انتشار الابتكارات العلمية بين الأفراد",
+            "تقليل التواصل بين الأفراد داخل المجتمع"
+        ],
+        correct: 1 // توفير معرفة متكاملة تساعد الأفراد في التكيف الاجتماعي
+    },
+    {
+        q: "أي من الخصائص التالية لا تعد من خصائص الثقافة؟",
+        options: [
+            "مكتسبة",
+            "متكاملة",
+            "فردية",
+            "تراكمية"
+        ],
+        correct: 2 // فردية
+    },
+    {
+        q: "ما هي الغاية التي تضيفها التطورات الحديثة إلى أهداف التعليم، والتي تعكس أهمية التكيف مع التغيرات المجتمعية؟",
+        options: [
+            "تعلم لتعمل",
+            "تعلم لتشارك الآخرين",
+            "تعلم لتتغير",
+            "تعلم لتعرف"
+        ],
+        correct: 2 // تعلم لتتغير
+    },
+    {
+        q: "ما هي أحد العوامل التي تعزز التعليم المستمر في المجتمع؟",
+        options: [
+            "محدودية الوصول إلى المعلومات",
+            "توفر البرامج التدريبية المتنوعة",
+            "التركيز على التعليم التقليدي فقط",
+            "تقليل فرص التعلم الذاتي"
+        ],
+        correct: 1 // توفر البرامج التدريبية المتنوعة
+    },
+    {
+        q: "ما هي إحدى القدرات التي يفترض أن يكتسبها المتعلمون من خلال مفهوم 'تعلم لتصبح'؟",
+        options: [
+            "القدرة على العمل الجماعي فقط",
+            "القدرة على التفكير النقدي",
+            "القدرة على الاستجابة للتغيرات السريعة",
+            "القدرة على استخدام التكنولوجيا"
+        ],
+        correct: 2 // القدرة على الاستجابة للتغيرات السريعة
+    },
+    {
+        q: "تحدث الفجوة الثقافية نتيجة لـ:",
+        options: [
+            "التغير التكنولوجي السريع",
+            "الاستقرار الثقافي المستمر",
+            "التقاليد الراسخة التي لا تتغير",
+            "الاتصال المحدود بين الثقافات"
+        ],
+        correct: 0 // التغير التكنولوجي السريع
+    },
+    {
+        q: "أي من الأهداف الأربعة للتعليم المقررة من قبل جاك ديلور يركز على تطوير المهارات اللازمة لتلبية متطلبات سوق العمل؟",
+        options: [
+            "تعلم لتعرف",
+            "تعلم لتعمل",
+            "تعلم لتكون",
+            "تعلم لتشارك الآخرين"
+        ],
+        correct: 1 // تعلم لتعمل
+    },
+    {
+        q: "أحد أهم عوامل الانتشار الثقافي هو:",
+        options: [
+            "العزلة الاجتماعية",
+            "التفاعل الاجتماعي بين الأفراد",
+            "تقليد الثقافة الأمية فقط",
+            "رفض العناصر الجديدة من الثقافة"
+        ],
+        correct: 1 // التفاعل الاجتماعي بين الأفراد
+    }
+];
+
+let index = 0;
+let score = 0;
+let userAnswers = Array(questions.length).fill(null);
+
+function updateProgress(){
+    document.getElementById("progressText").textContent =
+        `السؤال ${index+1} من ${questions.length}`;
+
+    document.getElementById("progressBar").style.width =
+        ((index+1)/questions.length)*100 + "%";
+}
+
+function loadQuestion(){
+    updateProgress();
+
+    const q = questions[index];
+    document.getElementById("questionText").textContent = q.q;
+    document.getElementById("feedback").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+
+    document.getElementById("prevBtn").style.display = index>0?"block":"none";
+
+    // إنشاء خيارات متعددة
+    let optionsHTML = '';
+    q.options.forEach((option, i) => {
+        optionsHTML += `<div class="option" onclick="selectOption(${i})">${option}</div>`;
+    });
+    document.getElementById("options").innerHTML = optionsHTML;
+
+    if(userAnswers[index] !== null){
+        showSavedAnswer();
+    }
+}
+
+function selectOption(i){
+    if(userAnswers[index] !== null) return;
+
+    userAnswers[index] = i;
+    const correct = questions[index].correct;
+    const options = document.querySelectorAll(".option");
+
+    if(i === correct){
+        score++;
+        document.getElementById("feedback").textContent="✔ إجابة صحيحة";
+        document.getElementById("feedback").style.color="#1b8a2c";
+        document.getElementById("feedback").style.background="#b6ffb6";
+    }else{
+        document.getElementById("feedback").textContent="❌ إجابة خاطئة";
+        document.getElementById("feedback").style.color="#b30000";
+        document.getElementById("feedback").style.background="#ffb6b6";
+    }
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        else if(idx === i) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("score").textContent=`النتيجة: ${score}`;
+    document.getElementById("feedback").style.display="block";
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function showSavedAnswer(){
+    const correct = questions[index].correct;
+    const selected = userAnswers[index];
+    const options = document.querySelectorAll(".option");
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        if(idx === selected && idx !== correct) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("feedback").style.display="block";
+    
+    if(selected === correct) {
+        document.getElementById("feedback").textContent = "✔ إجابة صحيحة";
+        document.getElementById("feedback").style.color="#1b8a2c";
+        document.getElementById("feedback").style.background="#b6ffb6";
+    } else {
+        document.getElementById("feedback").textContent = "❌ إجابة خاطئة";
+        document.getElementById("feedback").style.color="#b30000";
+        document.getElementById("feedback").style.background="#ffb6b6";
+    }
+
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function nextQuestion(){
+    index++;
+    if(index === questions.length){
+        showResult();
+    }else{
+        loadQuestion();
+    }
+}
+
+function prevQuestion(){
+    if(index>0){
+        index--;
+        loadQuestion();
+    }
+}
+
+function showResult(){
+    document.querySelector(".progress-bar").style.display="none";
+    document.getElementById("progressText").style.display="none";
+    document.getElementById("questionText").style.display="none";
+    document.getElementById("options").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+    document.getElementById("prevBtn").style.display="none";
+    document.getElementById("feedback").style.display="none";
+
+    const percent = Math.round((score/questions.length)*100);
+    document.getElementById("result").style.display="block";
+    document.getElementById("result").innerHTML = `
+        <h3>انتهى الاختبار</h3>
+        <p style="font-size: 24px; margin: 10px 0;">${score}/${questions.length}</p>
+        <p style="font-size: 20px;">نسبة النجاح: ${percent}%</p>
+    `;
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>

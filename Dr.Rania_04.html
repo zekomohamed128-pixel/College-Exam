@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار التعلم المدمج</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    font-family:"Cairo",Arial,sans-serif;
+    background:linear-gradient(135deg,#eef2ff,#e6eeff);
+    min-height:100vh;
+    padding:15px;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    overflow-y:auto;
+}
+
+.box{
+    background:#fff;
+    width:100%;
+    max-width:600px;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+h2{text-align:center;margin-bottom:10px}
+
+/* ===== عداد الأسئلة ===== */
+.progress-text{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:8px;
+    color:#4a64ff;
+}
+
+.progress-bar{
+    width:100%;
+    height:8px;
+    background:#e0e0e0;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:15px;
+}
+
+.progress{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#4a64ff,#6a82ff);
+    transition:.3s;
+}
+/* ======================= */
+
+#score{
+    text-align:center;
+    font-size:18px;
+    padding:10px;
+    margin-bottom:15px;
+    background:#f3f6ff;
+    border-radius:10px;
+    font-weight:bold;
+    color:#4a64ff;
+}
+
+.question{
+    background:#f8faff;
+    padding:15px;
+    border-radius:15px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.options-container{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.option{
+    background:#e8edff;
+    padding:18px;
+    border-radius:12px;
+    text-align:center;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.option:hover{background:#d9e0ff}
+
+.option.correct{background:#b6ffb6;color:#1b8a2c}
+.option.wrong{background:#ffb6b6;color:#b30000}
+
+#feedback{
+    display:none;
+    text-align:center;
+    font-weight:bold;
+    margin-top:15px;
+    padding:12px;
+    border-radius:10px;
+}
+
+button{
+    width:100%;
+    padding:16px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#nextBtn{
+    background:linear-gradient(135deg,#4a64ff,#6a82ff);
+    color:#fff;
+    display:none;
+}
+
+#prevBtn{
+    background:linear-gradient(135deg,#6c757d,#868e96);
+    color:#fff;
+    display:none;
+}
+
+#result{
+    display:none;
+    margin-top:20px;
+    padding:20px;
+    background:#d4ffd6;
+    border-radius:15px;
+    text-align:center;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2>Dr.Rania_EL-Gammal</h2>
+
+<!-- عداد الأسئلة -->
+<div class="progress-text" id="progressText"></div>
+<div class="progress-bar">
+    <div class="progress" id="progressBar"></div>
+</div>
+
+<div id="score">النتيجة: 0</div>
+
+<div class="question" id="questionText"></div>
+<div class="options-container" id="options"></div>
+
+<div id="feedback"></div>
+
+<button id="nextBtn" onclick="nextQuestion()">السؤال التالي</button>
+<button id="prevBtn" onclick="prevQuestion()">السؤال السابق</button>
+
+<div id="result"></div>
+</div>
+
+<script>
+const questions = [
+    {
+        q: "الأصول الفلسفية للتربية تهتم بدراسة تأثير العوامل الاقتصادية على التعليم.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "التغير التكنولوجي يؤثر ببطء على الثقافة لأنه يعتمد على العلوم التقليدية.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "الأصول الاجتماعية للتربية تركز على دراسة تأثير البيئة الطبيعية على عملية التعلم.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "الخصوصيات المهنية هي عناصر ثقافية تقتصر فقط على أفراد الطبقة الراقية.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "الفجوة الثقافية هي نوع من التجانس الثقافي داخل المجتمع الواحد.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "التعلم مدى الحياة يقتصر فقط على التعليم الرسمي في المؤسسات التعليمية.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "الثقافة تتكون فقط من العناصر المادية كالآلات والأدوات، وليس لها جوانب معنوية.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "تعتبر المهارات الحياتية جزءاً أساسياً من التعلم مدى الحياة.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "تعتبر دراسة النظريات التربوية القديمة جزءاً من الأصول التاريخية للتربية لفهم تطور التعليم عبر العصور.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "الثقافة ثابتة لا تتغير عبر الزمن، فهي تظل كما هي مهما تغيرت الظروف.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "تقرير 'ديلور' أكد على أن التعليم يجب أن يكون شاملاً ومستمراً مدى الحياة.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "الديناميات الثقافية تشير إلى استقرار الثقافة وعدم تعرضها للتغيير.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "التعلم مدى الحياة يعني فقط الحصول على شهادات دراسية جديدة.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "الرموز هي عناصر ثقافية تحمل معاني مشتركة لأفراد المجتمع.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "اللغة تعد وسيلة لنقل الثقافة بين الأجيال، لكنها لا تتأثر بالتطورات الثقافية.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "التعلم مدى الحياة يعتبر من حقوق الإنسان الأساسية كما هو منصوص عليه في عدة مواثيق دولية.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "يمكن للثقافة أن تنتقل من جيل لآخر بدون تغيير.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "التعليم المستمر يركز فقط على التعليم المهني ولا يشمل تطوير المهارات الشخصية.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "يتطلب مفهوم 'تعلم لتتغير' من الأفراد أن يكونوا قادرين على التكيف مع التغيرات البيئية والاجتماعية.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "يمكن اعتبار التعلم مدى الحياة استراتيجية لمواجهة الأزمات الاقتصادية فقط.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "يتطلب مفهوم 'تعلم لتشارك الآخرين' التعاون بين الأفراد لتبادل المعرفة والخبرات.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "تعتبر القدرة على التحليل والنقد من المهارات الأساسية في التعلم مدى الحياة.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "يمكن أن يؤثر التعلم مدى الحياة على القيم الشخصية والمهنية للأفراد.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "التعلم عبر الشبكات الاجتماعية ليس له تأثير على التعلم مدى الحياة.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "الثقافة تتكون فقط من العناصر المادية كالآلات والأدوات، وليس لها جوانب معنوية.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "يعد التعلم مدى الحياة مفهوماً حديثاً ظهر في القرن العشرين فقط.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "تتعامل الأصول الفلسفية للتربية مع تفسير الأهداف التربوية ووضع التصورات المناسبة لتحقيقها.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "يتطلب التعلم المستمر من الأفراد تطوير مهاراتهم فقط دون الاهتمام بالتواصل مع الآخرين.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "الثقافة تعتبر بيولوجية لأنها تولد مع الإنسان منذ ولادته.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "تقرير 'ديلور' يركز على أهمية التعلم في إطار التعليم فقط ولا يعترف بالتعلم خارج المدرسة.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "الثقافة تتميز بالترابط الوظيفي بين عناصرها، مما يعزز تكيف الأفراد داخل المجتمع.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "من بين أهداف التعليم المستمر تحقيق التكامل بين القيم القديمة ومتطلبات العصر الحديث.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "القيم الاجتماعية تظل ثابتة ولا تتغير عبر الزمن داخل المجتمع.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "التعلم مدى الحياة يعتبر استثماراً فردياً فقط وليس له تأثير على المجتمع.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "التراكم الثقافي يشير إلى إضافة عناصر ثقافية جديدة دون المساس بالعناصر القديمة.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "تعتبر مرونة التعليم المستمر من الخصائص الأساسية التي تجعله ملائماً لمتطلبات العصر.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "التماسك الاجتماعي يعتمد بشكل أساسي على التطور التكنولوجي للمجتمع.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "أهداف التعليم الأربعة التي حددها جاك ديلور هي: تعلم لتعرف، تعلم لتعمل، تعلم لتكون، تعلم لتشارك الآخرين.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "الثقافة الجمالية ترتبط فقط بالأعمال الفنية المرئية ولا تشمل الأدب والشعر والموسيقى.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "تؤكد التقارير الدولية على أن التعليم المستمر هو الأساس لتمكين الأفراد من مواجهة التحديات العالمية.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "الانتقال الثقافي بين الأجيال يحدث بصورة عشوائية وغير منظمة.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "التربية كمفهوم يمكن أن تكون معزولة عن المجتمع وثقافته دون أن تتأثر بهما.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "يمكن أن يتحقق التعلم مدى الحياة من خلال العمل التطوعي والمشاركة المجتمعية.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "التبادل الثقافي يؤدي دائماً إلى تعزيز الفهم المتبادل بين الثقافات.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "التقليد يعتبر عنصراً أساسياً في الحفاظ على الثقافة.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "يتطلب التعلم المستمر من الأفراد تطوير مهاراتهم فقط دون الاهتمام بالتواصل مع الآخرين.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "غرض 'تعلم لتشارك الآخرين' يركز على توسيع نطاق التعلم من المستوى المحلي إلى المستوى العالمي.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "يمكن للمتعلمين تحديد متطلبات تعلمهم الخاصة وفقاً لإرادتهم واحتياجاتهم فقط في نظام التعليم التقليدي.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 1 // خاطئة
+    },
+    {
+        q: "التعلم مدى الحياة يتطلب من الأفراد استثمار الوقت في التعليم الذاتي والتدريب المستمر.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    },
+    {
+        q: "يمكن اعتبار التعلم من خلال التجارب اليومية جزءاً من التعلم مدى الحياة.",
+        options: ["صحيحة", "خاطئة"],
+        correct: 0 // صحيحة
+    }
+];
+
+let index = 0;
+let score = 0;
+let userAnswers = Array(questions.length).fill(null);
+
+function updateProgress(){
+    document.getElementById("progressText").textContent =
+        `السؤال ${index+1} من ${questions.length}`;
+
+    document.getElementById("progressBar").style.width =
+        ((index+1)/questions.length)*100 + "%";
+}
+
+function loadQuestion(){
+    updateProgress();
+
+    const q = questions[index];
+    document.getElementById("questionText").textContent = q.q;
+    document.getElementById("feedback").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+
+    document.getElementById("prevBtn").style.display = index>0?"block":"none";
+
+    document.getElementById("options").innerHTML = `
+        <div class="option" onclick="selectOption(0)">✓ صواب</div>
+        <div class="option" onclick="selectOption(1)">✗ خطأ</div>
+    `;
+
+    if(userAnswers[index] !== null){
+        showSavedAnswer();
+    }
+}
+
+function selectOption(i){
+    if(userAnswers[index] !== null) return;
+
+    userAnswers[index] = i;
+    const correct = questions[index].correct;
+    const options = document.querySelectorAll(".option");
+
+    if(i === correct){
+        score++;
+        document.getElementById("feedback").textContent="✔ إجابة صحيحة";
+    }else{
+        document.getElementById("feedback").textContent="❌ إجابة خاطئة";
+    }
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        else if(idx === i) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("score").textContent=`النتيجة: ${score}`;
+    document.getElementById("feedback").style.display="block";
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function showSavedAnswer(){
+    const correct = questions[index].correct;
+    const selected = userAnswers[index];
+    const options = document.querySelectorAll(".option");
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        if(idx === selected && idx !== correct) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("feedback").style.display="block";
+    document.getElementById("feedback").textContent =
+        selected === correct ? "✔ إجابة صحيحة" : "❌ إجابة خاطئة";
+
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function nextQuestion(){
+    index++;
+    if(index === questions.length){
+        showResult();
+    }else{
+        loadQuestion();
+    }
+}
+
+function prevQuestion(){
+    if(index>0){
+        index--;
+        loadQuestion();
+    }
+}
+
+function showResult(){
+    document.querySelector(".progress-bar").style.display="none";
+    document.getElementById("progressText").style.display="none";
+    document.getElementById("questionText").style.display="none";
+    document.getElementById("options").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+    document.getElementById("prevBtn").style.display="none";
+    document.getElementById("feedback").style.display="none";
+
+    const percent = Math.round((score/questions.length)*100);
+    document.getElementById("result").style.display="block";
+    document.getElementById("result").innerHTML =
+        `انتهى الاختبار<br>${score}/${questions.length}<br>${percent}%`;
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
