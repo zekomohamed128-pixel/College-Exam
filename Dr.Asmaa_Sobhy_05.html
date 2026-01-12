@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار تكنولوجيا التعليم</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    font-family:"Cairo", Arial, sans-serif;
+    background:linear-gradient(135deg, #eef2ff, #e6eeff);
+    min-height:100vh;
+    padding:15px;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    overflow-y:auto;
+}
+
+.box{
+    background:#fff;
+    width:100%;
+    max-width:650px;
+    padding:25px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+h2{
+    text-align:center;
+    margin-bottom:15px;
+    color:#333;
+}
+
+/* ===== عداد الأسئلة ===== */
+.progress-text{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:8px;
+    color:#4a64ff;
+    font-size:18px;
+}
+
+.progress-bar{
+    width:100%;
+    height:10px;
+    background:#e0e0e0;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:20px;
+}
+
+.progress{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, #4a64ff, #6a82ff);
+    transition:.3s;
+}
+/* ======================= */
+
+#score{
+    text-align:center;
+    font-size:20px;
+    padding:12px;
+    margin-bottom:20px;
+    background:#f3f6ff;
+    border-radius:10px;
+    font-weight:bold;
+    color:#4a64ff;
+    border:2px solid #e0e6ff;
+}
+
+.question{
+    background:#f8faff;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:25px;
+    font-weight:bold;
+    font-size:20px;
+    line-height:1.6;
+    border-right:5px solid #4a64ff;
+}
+
+.options-container{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.option{
+    background:#e8edff;
+    padding:20px;
+    border-radius:12px;
+    text-align:center;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+    font-size:18px;
+    border:2px solid transparent;
+}
+
+.option:hover{
+    background:#d9e0ff;
+    transform:translateY(-2px);
+}
+
+.option.selected{
+    border-color:#4a64ff;
+    background:#d9e0ff;
+}
+
+.option.correct{
+    background:#b6ffb6;
+    color:#1b8a2c;
+    border-color:#1b8a2c;
+}
+
+.option.wrong{
+    background:#ffb6b6;
+    color:#b30000;
+    border-color:#b30000;
+}
+
+#feedback{
+    display:none;
+    text-align:center;
+    font-weight:bold;
+    margin-top:20px;
+    padding:15px;
+    border-radius:10px;
+    background:#f0f4ff;
+    border-right:5px solid #4a64ff;
+    font-size:18px;
+    line-height:1.5;
+}
+
+button{
+    width:100%;
+    padding:18px;
+    margin-top:15px;
+    border:none;
+    border-radius:12px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+#nextBtn{
+    background:linear-gradient(135deg, #4a64ff, #6a82ff);
+    color:#fff;
+    display:none;
+}
+
+#nextBtn:hover{
+    background:linear-gradient(135deg, #3a54ef, #5a72ef);
+}
+
+#prevBtn{
+    background:linear-gradient(135deg, #6c757d, #868e96);
+    color:#fff;
+    display:none;
+}
+
+#prevBtn:hover{
+    background:linear-gradient(135deg, #5c656d, #767e86);
+}
+
+#result{
+    display:none;
+    margin-top:25px;
+    padding:25px;
+    background:#d4ffd6;
+    border-radius:15px;
+    text-align:center;
+    font-weight:bold;
+    font-size:22px;
+    border:3px solid #1b8a2c;
+}
+
+#result span{
+    display:block;
+    margin:10px 0;
+    font-size:28px;
+    color:#1b8a2c;
+}
+
+.restart-btn{
+    background:linear-gradient(135deg, #28a745, #20c997);
+    color:#fff;
+    margin-top:20px;
+    display:none;
+}
+
+.restart-btn:hover{
+    background:linear-gradient(135deg, #218838, #1ca87e);
+}
+
+.feedback-detail{
+    font-weight:normal;
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px dashed #4a64ff;
+    color:#555;
+}
+
+@media (max-width: 600px) {
+    .box{
+        padding:15px;
+    }
+    
+    .question{
+        font-size:18px;
+        padding:15px;
+    }
+    
+    .option{
+        padding:16px;
+        font-size:16px;
+    }
+    
+    #feedback{
+        font-size:16px;
+        padding:12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2>Dr.Asmaa_Sobhy(Esraa_Emad)</h2>
+
+<!-- عداد الأسئلة -->
+<div class="progress-text" id="progressText"></div>
+<div class="progress-bar">
+    <div class="progress" id="progressBar"></div>
+</div>
+
+<div id="score">النتيجة: 0</div>
+
+<div class="question" id="questionText"></div>
+<div class="options-container" id="options"></div>
+
+<div id="feedback"></div>
+
+<button id="prevBtn" onclick="prevQuestion()">السؤال السابق</button>
+<button id="nextBtn" onclick="nextQuestion()">السؤال التالي</button>
+
+<div id="result"></div>
+<button class="restart-btn" onclick="restartTest()">إعادة الاختبار</button>
+</div>
+
+<script>
+const questions = [
+    {
+  "q": "يعتمد الواقع المعزز على دمج العناصر الافتراضية مع البيئة الحقيقية للمستخدم.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "في الواقع المعزز، ينفصل المستخدم تماماً عن العالم الواقعي المحيط به.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "يتطلب الواقع المعزز وجود كاميرا وشاشة لعرض التداخل بين الواقع والخيال.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "يمكن لتقنية الواقع المعزز إضافة نصوص أو أصوات أو نماذج ثلاثية الأبعاد للكتب الورقية.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "تكنولوجيا الواقع المعزز هي نفسها تكنولوجيا الواقع الافتراضي ولا يوجد فرق بينهما.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "تعتمد بعض تطبيقات الواقع المعزز على 'العلامات' (Markers) لتحديد مكان ظهور العنصر الرقمي.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "يساعد الواقع المعزز في تحويل الأشكال الهندسية المعقدة في الكتب إلى نماذج مجسمة يسهل فهمها.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "تقنية الهولوجرام تعني العرض ثنائي الأبعاد للصور على شاشات التلفاز العادية.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "يمكن مشاهدة صور الهولوجرام من زوايا مختلفة (360 درجة) كأنها جسم حقيقي.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "يعتمد الهولوجرام في تصويره وتجسيمه للأشياء على أشعة الليزر.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الصورة الهولوجرامية تظهر في الفضاء كأنها جسم مادي ملموس ولكنها في الحقيقة مجرد ضوء.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "يحتاج الطلاب دائماً لارتداء نظارات ثقيلة لمشاهدة عروض الهولوجرام في الفصل.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "الهولوجرام الرقمي يتم إنتاجه بواسطة الحاسوب دون الحاجة لتصوير جسم مادي.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "خاصية 'الشمول' في الهولوجرام تعني إمكانية رؤية تفاصيل الجسم من جميع جوانبه.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الواقع المعزز يساهم في زيادة تفاعل الطالب مع المحتوى الدراسي المطبوع.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "تقنية الهولوجرام توفر تجربة تعليمية أكثر واقعية من الصور التقليدية المسطحة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "يمكن استخدام الواقع المعزز في كليات الطب لرؤية أعضاء الجسم فوق جسم الإنسان الحقيقي.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "صور الهولوجرام تفقد بريقها وتفاصيلها إذا تم تقسيمها إلى أجزاء صغيرة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "التفاعل مع الواقع المعزز يتطلب بالضرورة اتصالاً دائماً بإنترنت فائق السرعة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "الهولوجرام يسمح بإعادة تجسيد الشخصيات التاريخية لإلقاء المحاضرات للطلاب.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "تعتبر تكلفة إنتاج محتوى الهولوجرام الاحترافي من التحديات التي تواجه استخدامه واسع النطاق.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الواقع المعزز يعتمد على تقنية الرؤية المباشرة أو غير المباشرة للواقع.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الهولوجرام هو مجرد صورة فوتوغرافية مطورة ولا علاقة له بالأشعة الضوئية المتداخلة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "توفر تكنولوجيا الهولوجرام ميزة 'العمق' التي تفتقدها الصور العادية.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "يساعد الواقع المعزز في تقليل الفجوة بين التعليم النظري والتطبيق العملي.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+}
+];
+
+let index = 0;
+let score = 0;
+let userAnswers = Array(questions.length).fill(null);
+
+function updateProgress(){
+    document.getElementById("progressText").textContent =
+        `السؤال ${index+1} من ${questions.length}`;
+
+    document.getElementById("progressBar").style.width =
+        ((index+1)/questions.length)*100 + "%";
+}
+
+function loadQuestion(){
+    updateProgress();
+
+    const q = questions[index];
+    document.getElementById("questionText").textContent = q.q;
+    document.getElementById("feedback").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+    
+    // إظهار زر السابق فقط إذا لم نكن في السؤال الأول
+    document.getElementById("prevBtn").style.display = index>0?"block":"none";
+
+    // إنشاء خيارات السؤال
+    document.getElementById("options").innerHTML = `
+        <div class="option" onclick="selectOption(0)">✓ صواب</div>
+        <div class="option" onclick="selectOption(1)">✗ خطأ</div>
+    `;
+
+    // إذا كان المستخدم قد أجاب على هذا السؤال مسبقاً، نعرض إجابته
+    if(userAnswers[index] !== null){
+        showSavedAnswer();
+    }
+}
+
+function selectOption(i){
+    // منع الإجابة مرة أخرى على نفس السؤال
+    if(userAnswers[index] !== null) return;
+    
+    userAnswers[index] = i;
+    const correct = questions[index].correct;
+    const options = document.querySelectorAll(".option");
+    
+    // إضافة تأثير التحديد
+    options[i].classList.add("selected");
+    
+    // إظهار الإجابة الصحيحة والخاطئة
+    if(i === correct){
+        score++;
+        document.getElementById("feedback").innerHTML = 
+            `<span style="color:#1b8a2c">✔ إجابة صحيحة</span>
+             <div class="feedback-detail">${questions[index].feedback}</div>`;
+    }else{
+        document.getElementById("feedback").innerHTML = 
+            `<span style="color:#b30000">❌ إجابة خاطئة</span>
+             <div class="feedback-detail">${questions[index].feedback}</div>`;
+    }
+
+    // تلوين الإجابات
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        else if(idx === i && idx !== correct) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    // تحديث النتيجة
+    document.getElementById("score").textContent=`النتيجة: ${score}`;
+    document.getElementById("feedback").style.display="block";
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function showSavedAnswer(){
+    const correct = questions[index].correct;
+    const selected = userAnswers[index];
+    const options = document.querySelectorAll(".option");
+
+    // تلوين الإجابات
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        if(idx === selected && idx !== correct) op.classList.add("wrong");
+        if(idx === selected) op.classList.add("selected");
+        op.style.pointerEvents="none";
+    });
+
+    // إظهار التغذية الراجعة
+    document.getElementById("feedback").style.display="block";
+    document.getElementById("feedback").innerHTML = 
+        selected === correct ? 
+        `<span style="color:#1b8a2c">✔ إجابة صحيحة</span>
+         <div class="feedback-detail">${questions[index].feedback}</div>` :
+        `<span style="color:#b30000">❌ إجابة خاطئة</span>
+         <div class="feedback-detail">${questions[index].feedback}</div>`;
+
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function nextQuestion(){
+    index++;
+    if(index === questions.length){
+        showResult();
+    }else{
+        loadQuestion();
+    }
+}
+
+function prevQuestion(){
+    if(index>0){
+        index--;
+        loadQuestion();
+    }
+}
+
+function showResult(){
+    document.querySelector(".progress-bar").style.display="none";
+    document.getElementById("progressText").style.display="none";
+    document.getElementById("questionText").style.display="none";
+    document.getElementById("options").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+    document.getElementById("prevBtn").style.display="none";
+    document.getElementById("feedback").style.display="none";
+
+    const percent = Math.round((score/questions.length)*100);
+    let message = "";
+    
+    if(percent >= 90) message = "!ممتاز";
+    else if(percent >= 80) message = "جيد جداً!";
+    else if(percent >= 70) message = "جيد!";
+    else if(percent >= 60) message = "محتاج تذاكر";
+    else message = "روح نام أفضل";
+    
+    document.getElementById("result").style.display="block";
+    document.getElementById("result").innerHTML = `
+        <h3>انتهى الاختبار</h3>
+        <span>${score}/${questions.length}</span>
+        <div>${percent}%</div>
+        <div style="margin-top:15px; font-size:20px;">${message}</div>
+    `;
+    
+    document.querySelector(".restart-btn").style.display="block";
+}
+
+function restartTest(){
+    index = 0;
+    score = 0;
+    userAnswers = Array(questions.length).fill(null);
+    
+    document.querySelector(".progress-bar").style.display="block";
+    document.getElementById("progressText").style.display="block";
+    document.getElementById("questionText").style.display="block";
+    document.getElementById("options").style.display="flex";
+    document.getElementById("result").style.display="none";
+    document.querySelector(".restart-btn").style.display="none";
+    
+    document.getElementById("score").textContent=`النتيجة: ${score}`;
+    
+    loadQuestion();
+}
+
+// بدء الاختبار
+loadQuestion();
+</script>
+
+</body>
+</html>
