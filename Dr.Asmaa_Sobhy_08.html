@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار تكنولوجيا التعليم</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    font-family:"Cairo",Arial,sans-serif;
+    background:linear-gradient(135deg,#eef2ff,#e6eeff);
+    min-height:100vh;
+    padding:15px;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    overflow-y:auto;
+}
+
+.box{
+    background:#fff;
+    width:100%;
+    max-width:600px;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+h2{text-align:center;margin-bottom:10px}
+
+/* ===== عداد الأسئلة ===== */
+.progress-text{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:8px;
+    color:#4a64ff;
+}
+
+.progress-bar{
+    width:100%;
+    height:8px;
+    background:#e0e0e0;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:15px;
+}
+
+.progress{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#4a64ff,#6a82ff);
+    transition:.3s;
+}
+/* ======================= */
+
+#score{
+    text-align:center;
+    font-size:18px;
+    padding:10px;
+    margin-bottom:15px;
+    background:#f3f6ff;
+    border-radius:10px;
+    font-weight:bold;
+    color:#4a64ff;
+}
+
+.question{
+    background:#f8faff;
+    padding:15px;
+    border-radius:15px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.options-container{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.option{
+    background:#e8edff;
+    padding:18px;
+    border-radius:12px;
+    text-align:center;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.option:hover{background:#d9e0ff}
+
+.option.correct{background:#b6ffb6;color:#1b8a2c}
+.option.wrong{background:#ffb6b6;color:#b30000}
+
+button{
+    width:100%;
+    padding:16px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#nextBtn{
+    background:linear-gradient(135deg,#4a64ff,#6a82ff);
+    color:#fff;
+    display:none;
+}
+
+#prevBtn{
+    background:linear-gradient(135deg,#6c757d,#868e96);
+    color:#fff;
+    display:none;
+}
+
+#result{
+    display:none;
+    margin-top:20px;
+    padding:20px;
+    background:#d4ffd6;
+    border-radius:15px;
+    text-align:center;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2>Dr.Asmaa_Sobhy(Esraa_Emad)</h2>
+
+<!-- عداد الأسئلة -->
+<div class="progress-text" id="progressText"></div>
+<div class="progress-bar">
+    <div class="progress" id="progressBar"></div>
+</div>
+
+<div id="score">النتيجة: 0</div>
+
+<div class="question" id="questionText"></div>
+<div class="options-container" id="options"></div>
+
+<button id="nextBtn" onclick="nextQuestion()">السؤال التالي</button>
+<button id="prevBtn" onclick="prevQuestion()">السؤال السابق</button>
+
+<div id="result"></div>
+</div>
+
+<script>
+const questions = [
+    {
+  "q": "أي من الخصائص التالية تعني شعور المستخدم بالاندماج الكامل داخل عالم اللعبة؟",
+  "options": [
+    "التفاعلية",
+    "الانغماس",
+    "الرقمنة",
+    "التزامن"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "نمط الألعاب الذي يتطلب التنسيق بين حركة اليد والعين يسمى:",
+  "options": [
+    "الألغاز",
+    "تمثيل الأدوار",
+    "المناصات (Platforms)",
+    "المحاكاة"
+  ],
+  "correct": 2 // الإجابة الثالثة (ج)
+},
+{
+  "q": "الألعاب التي يتقمص فيها اللاعب شخصية وتتضمن حوارات وتطوير لمستويات الشخصية هي:",
+  "options": [
+    "ألعاب الحركة",
+    "ألعاب تمثيل الأدوار (RPG)",
+    "ألعاب الألغاز",
+    "الألعاب الاستراتيجية"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "نمط الألعاب الذي يهدف لمحاكاة بناء وإدارة المدن أو الجيوش هو:",
+  "options": [
+    "ألعاب المغامرة",
+    "المحاكاة والاستراتيجية",
+    "ألعاب الحركة",
+    "الألعاب الإعلانية"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "ما هو التصنيف المناسب للعبة تهدف لتدريب الأطباء على الجراحة؟",
+  "options": [
+    "ألعاب ترفيهية",
+    "ألعاب بسيطة",
+    "ألعاب جدية (Serious Games)",
+    "ألعاب حظ"
+  ],
+  "correct": 2 // الإجابة الثالثة (ج)
+},
+{
+  "q": "الألعاب التي يتنافس فيها مجموعة كبيرة من اللاعبين عبر الإنترنت تسمى:",
+  "options": [
+    "ألعاب فردية",
+    "ألعاب ثنائية",
+    "ألعاب جماعية",
+    "ألعاب ثابتة"
+  ],
+  "correct": 2 // الإجابة الثالثة (ج)
+},
+{
+  "q": "أي مرحلة من مراحل إنتاج اللعبة تشمل رسم الشخصيات وتسجيل الأصوات؟",
+  "options": [
+    "التحليل",
+    "التصميم",
+    "النشر",
+    "الاختبار"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "مرحلة 'النشر' في الألعاب التعليمية تعني:",
+  "options": [
+    "كتابة السيناريو",
+    "تجربة اللعبة مع الطلاب",
+    "رفع اللعبة على الإنترنت أو توزيعها",
+    "تقييم أداء المعلم"
+  ],
+  "correct": 2 // الإجابة الثالثة (ج)
+},
+{
+  "q": "من الأسس التربوية لاختيار اللعبة أن توفر 'التغذية الراجعة' التي تهدف لـ:",
+  "options": [
+    "إحباط المتعلم",
+    "توجيه المتعلم وحفظ تركيزه",
+    "إنهاء اللعبة بسرعة",
+    "زيادة وقت الحصة"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "عندما توفر اللعبة مستويات (سهل، متوسط، صعب)، فهي تراعي معيار:",
+  "options": [
+    "واجهة المستخدم",
+    "مستوى الصعوبة",
+    "نوع الصوت",
+    "لغة البرمجة"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "أي مما يلي يعد من 'الأسس التقنية' لاختيار اللعبة؟",
+  "options": [
+    "وضوح الأهداف",
+    "واجهة المستخدم (Interface)",
+    "نوع المحتوى",
+    "الفئة العمرية"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "المقصود بـ 'التخصيص' (Customization) في الألعاب هو:",
+  "options": [
+    "جعل اللعبة عامة للجميع",
+    "منح اللاعب حرية اختيار الشخصية أو الألوان",
+    "منع اللاعب من تغيير الإعدادات",
+    "حذف اللعبة"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "يتم اختيار 'اللغة' في اللعبة التعليمية بناءً على:",
+  "options": [
+    "رغبة المبرمج",
+    "الفئة العمرية للمتعلمين",
+    "نوع الجهاز المستخدم",
+    "سعر اللعبة"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "تعتبر الألعاب التعليمية وسيلة فعالة في:",
+  "options": [
+    "تقليل التفاعل",
+    "إثارة الدافعية وبقاء أثر التعلم",
+    "زيادة الملل الدراسي",
+    "إهمال المنهج"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "أي من أنماط الألعاب التالية يعتبر الأكثر تعقيداً ويحتاج لتخطيط بعيد المدى؟",
+  "options": [
+    "ألعاب الحركة",
+    "الألعاب الاستراتيجية",
+    "الألعاب البسيطة",
+    "ألعاب التمارين"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "العنصر الذي يحدد ما هو 'مسموح' و 'ممنوع' داخل اللعبة يسمى:",
+  "options": [
+    "الهدف",
+    "القواعد (Rules)",
+    "التسلية",
+    "الجرافيك"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "ألعاب 'تمثيل الأدوار' (RPG) غالباً ما تكون مستوحاة من:",
+  "options": [
+    "العمليات الحسابية",
+    "القصص الخيالية والمغامرات",
+    "نشرات الأخبار",
+    "القواميس"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "الفرق الرئيسي بين ألعاب المحاكاة والألعاب الأخرى هو:",
+  "options": [
+    "أنها لا تحتوي على أهداف",
+    "أنها تمثل مواقف واقعية",
+    "أنها مخصصة للأطفال فقط",
+    "أنها لا تحتاج لكمبيوتر"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "'ألعاب المنصات' (Platforms) تندرج غالباً تحت تصنيف:",
+  "options": [
+    "ألعاب الحركة",
+    "ألعاب الألغاز",
+    "الألعاب الجدية",
+    "ألعاب المحاكاة"
+  ],
+  "correct": 0 // الإجابة الأولى (أ)
+},
+{
+  "q": "من معوقات استخدام الألعاب التعليمية في المدارس:",
+  "options": [
+    "سهولة توفرها",
+    "التكلفة المرتفعة لبعض الأجهزة",
+    "حب الطلاب لها",
+    "وضوح أهدافها"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "يطلق مصطلح (Advergames) على الألعاب:",
+  "options": [
+    "التعليمية الصرفة",
+    "الإعلانية والترويجية",
+    "الطبية",
+    "القتالية"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "الألعاب التي تهدف لتعلم 'الاستراتيجيات العسكرية' تسمى:",
+  "options": [
+    "ألعاب بسيطة",
+    "ألعاب جدية (Serious Games)",
+    "ألعاب حظ",
+    "ألعاب أطفال"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "أهمية 'التحليل' قبل تصميم اللعبة تكمن في:",
+  "options": [
+    "توزيع اللعبة",
+    "تحديد احتياجات المتعلمين والأهداف",
+    "كتابة الكود البرمجي",
+    "تسجيل الصوت"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "وضوح 'تعليمات اللعبة' يساعد المتعلم على:",
+  "options": [
+    "تجنب الخطأ وفهم كيفية التقدم",
+    "زيادة صعوبة اللعبة",
+    "إغلاق البرنامج",
+    "نسيان الدرس"
+  ],
+  "correct": 0 // الإجابة الأولى (أ)
+},
+{
+  "q": "عندما تتيح اللعبة 'التعاون' بين الطلاب، فهي تدعم:",
+  "options": [
+    "العزلة الاجتماعية",
+    "التعلم الاجتماعي والتعاوني",
+    "الغش",
+    "المنافسة السلبية"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "تعتبر 'الأصوات' (Audio) في اللعبة:",
+  "options": [
+    "عنصر تشتيت دائماً",
+    "عنصر جذب وتوضيح للمهام",
+    "غير ضرورية إطلاقاً",
+    "مخصصة للألعاب الترفيهية فقط"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "تفريد التعليم في الألعاب يعني:",
+  "options": [
+    "أن يلعب الطالب وحده دائماً",
+    "مراعاة سرعة وقدرات كل طالب",
+    "منع الطلاب من الحديث",
+    "استخدام جهاز واحد للفصل"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "يرتبط نجاح اللعبة التعليمية بمدى تحقيقها لـ:",
+  "options": [
+    "أعلى النقاط فقط",
+    "الأهداف التعليمية المنشودة",
+    "الشهرة العالمية",
+    "الربح المادي"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "ألعاب 'الألغاز' تتطلب من المتعلم مهارات:",
+  "options": [
+    "القفز السريع",
+    "التحليل والتفكير المنطقي",
+    "القوة البدنية",
+    "الحظ المطلق"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "المقصود بـ 'بيئة آمنة للتعلم' في ألعاب المحاكاة:",
+  "options": [
+    "عدم وجود فيروسات بالكمبيوتر",
+    "إمكانية تجربة مخاطر (كيميائية أو طبية) دون ضرر حقيقي",
+    "الجلوس في غرفة مغلقة",
+    "عدم التحدث مع الغرباء"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "ألعاب 'تمارين الرشاقة' تعتمد على:",
+  "options": [
+    "لوحة المفاتيح فقط",
+    "أجهزة استشعار الحركة والنشاط البدني",
+    "القراءة الصامتة",
+    "المشاهدة السلبية"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "يتم تقييم أداء المتعلم داخل اللعبة من خلال:",
+  "options": [
+    "عدد الألوان المستخدمة",
+    "نظم تتبع التقدم والدرجات (Scoring)",
+    "حجم ملف اللعبة",
+    "نوع الشاشة"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "إذا كانت اللعبة مخصصة لمرحلة رياض الأطفال، يجب أن تعتمد واجهتها على:",
+  "options": [
+    "النصوص الكثيفة",
+    "الصور والأيقونات الجذابة والواضحة",
+    "الأوامر البرمجية",
+    "الرسوم البيانية المعقدة"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "الوقت 'المثالي' للعبة التعليمية هو الذي:",
+  "options": [
+    "يستمر لساعات طويلة جداً",
+    "يحقق الهدف التعليمي دون إجهاد الطالب",
+    "ينتهي في دقيقة واحدة",
+    "لا ينتهي أبداً"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+},
+{
+  "q": "تعتبر 'الاستراتيجية' في الألعاب نقيضاً لـ:",
+  "options": [
+    "التخطيط",
+    "الحظ العشوائي",
+    "الذكاء",
+    "المهارة"
+  ],
+  "correct": 1 // الإجابة الثانية (ب)
+}
+];
+
+let index = 0;
+let score = 0;
+let userAnswers = Array(questions.length).fill(null);
+
+function updateProgress(){
+    document.getElementById("progressText").textContent =
+        `السؤال ${index+1} من ${questions.length}`;
+
+    document.getElementById("progressBar").style.width =
+        ((index+1)/questions.length)*100 + "%";
+}
+
+function loadQuestion(){
+    updateProgress();
+
+    const q = questions[index];
+    document.getElementById("questionText").textContent = q.q;
+    document.getElementById("nextBtn").style.display="none";
+
+    document.getElementById("prevBtn").style.display = index>0?"block":"none";
+
+    // إنشاء خيارات متعددة
+    let optionsHTML = '';
+    q.options.forEach((option, i) => {
+        optionsHTML += `<div class="option" onclick="selectOption(${i})">${option}</div>`;
+    });
+    document.getElementById("options").innerHTML = optionsHTML;
+
+    if(userAnswers[index] !== null){
+        showSavedAnswer();
+    }
+}
+
+function selectOption(i){
+    if(userAnswers[index] !== null) return;
+
+    userAnswers[index] = i;
+    const correct = questions[index].correct;
+    const options = document.querySelectorAll(".option");
+
+    if(i === correct){
+        score++;
+    }
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        else if(idx === i) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("score").textContent=`النتيجة: ${score}`;
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function showSavedAnswer(){
+    const correct = questions[index].correct;
+    const selected = userAnswers[index];
+    const options = document.querySelectorAll(".option");
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        if(idx === selected && idx !== correct) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function nextQuestion(){
+    index++;
+    if(index === questions.length){
+        showResult();
+    }else{
+        loadQuestion();
+    }
+}
+
+function prevQuestion(){
+    if(index>0){
+        index--;
+        loadQuestion();
+    }
+}
+
+function showResult(){
+    document.querySelector(".progress-bar").style.display="none";
+    document.getElementById("progressText").style.display="none";
+    document.getElementById("questionText").style.display="none";
+    document.getElementById("options").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+    document.getElementById("prevBtn").style.display="none";
+
+    const percent = Math.round((score/questions.length)*100);
+    document.getElementById("result").style.display="block";
+    document.getElementById("result").innerHTML = `
+        <h3>انتهى الاختبار</h3>
+        <p style="font-size: 24px; margin: 10px 0;">${score}/${questions.length}</p>
+        <p style="font-size: 20px;">نسبة النجاح: ${percent}%</p>
+    `;
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>

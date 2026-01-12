@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار التعلم المدمج</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    font-family:"Cairo",Arial,sans-serif;
+    background:linear-gradient(135deg,#eef2ff,#e6eeff);
+    min-height:100vh;
+    padding:15px;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    overflow-y:auto;
+}
+
+.box{
+    background:#fff;
+    width:100%;
+    max-width:600px;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+h2{text-align:center;margin-bottom:10px}
+
+/* ===== عداد الأسئلة ===== */
+.progress-text{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:8px;
+    color:#4a64ff;
+}
+
+.progress-bar{
+    width:100%;
+    height:8px;
+    background:#e0e0e0;
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:15px;
+}
+
+.progress{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#4a64ff,#6a82ff);
+    transition:.3s;
+}
+/* ======================= */
+
+#score{
+    text-align:center;
+    font-size:18px;
+    padding:10px;
+    margin-bottom:15px;
+    background:#f3f6ff;
+    border-radius:10px;
+    font-weight:bold;
+    color:#4a64ff;
+}
+
+.question{
+    background:#f8faff;
+    padding:15px;
+    border-radius:15px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.options-container{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.option{
+    background:#e8edff;
+    padding:18px;
+    border-radius:12px;
+    text-align:center;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.option:hover{background:#d9e0ff}
+
+.option.correct{background:#b6ffb6;color:#1b8a2c}
+.option.wrong{background:#ffb6b6;color:#b30000}
+
+#feedback{
+    display:none;
+    text-align:center;
+    font-weight:bold;
+    margin-top:15px;
+    padding:12px;
+    border-radius:10px;
+}
+
+button{
+    width:100%;
+    padding:16px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#nextBtn{
+    background:linear-gradient(135deg,#4a64ff,#6a82ff);
+    color:#fff;
+    display:none;
+}
+
+#prevBtn{
+    background:linear-gradient(135deg,#6c757d,#868e96);
+    color:#fff;
+    display:none;
+}
+
+#result{
+    display:none;
+    margin-top:20px;
+    padding:20px;
+    background:#d4ffd6;
+    border-radius:15px;
+    text-align:center;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2>Dr.Asmaa_Sobhy(Esraa_Emad)</h2>
+
+<!-- عداد الأسئلة -->
+<div class="progress-text" id="progressText"></div>
+<div class="progress-bar">
+    <div class="progress" id="progressBar"></div>
+</div>
+
+<div id="score">النتيجة: 0</div>
+
+<div class="question" id="questionText"></div>
+<div class="options-container" id="options"></div>
+
+<div id="feedback"></div>
+
+<button id="nextBtn" onclick="nextQuestion()">السؤال التالي</button>
+<button id="prevBtn" onclick="prevQuestion()">السؤال السابق</button>
+
+<div id="result"></div>
+</div>
+
+<script>
+const questions = [
+{
+  "q": "يشير مصطلح الألعاب الرقمية التعليمية إلى شكل من أشكال التعلم القائم على مجموعة من الخطوات والإجراءات التي يؤديها المتعلم على الكمبيوتر.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "تعتبر الألعاب التعليمية نوعاً من التعلم المتمركز حول المعلم، حيث يتحكم المعلم في كل مسارات اللعبة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "وفقاً لـ 'كراوتفورد'، يقتصر النجاح في اللعبة التعليمية على حفظ وتذكر المعارف فقط.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "تهدف 'الألعاب الجدية' (Serious Games) إلى تحسين جوانب التعلم والتدريب في مجالات مثل الطب والدفاع.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "ألعاب الحركة (Action Games) تعتمد بشكل أساسي على سرعة البدنية ورد الفعل السريع في زمن محدد.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "ألعاب المغامرة (Adventure Games) تركز على القصة التفاعلية والاستكشاف، وغالباً ما تخلو من القتال.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "تعتمد ألعاب الألغاز (Puzzle Games) على التفكير العلمي وتوظيف المعلومات لحل مشكلات محددة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "في ألعاب تمثيل الأدوار (RPG)، يتقمص المتعلم شخصية واحدة فقط ولا يمكنه التحكم في مجموعة من الشخصيات.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "ألعاب المحاكاة (Simulation) تهدف إلى تمثيل جوانب من الحياة الحقيقية وتتطلب مهارات إدارية واستراتيجية.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الألعاب الاستراتيجية تركز على التفكير الحيوي والتخطيط، وغالباً ما تدور أحداثها في جو من الصراع.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الألعاب الإعلانية (Advergames) هي ألعاب مجانية تهدف للترويج لمنتجات شركات معينة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الألعاب البسيطة التصميم تتميز بقواعد معقدة وتحتاج مهارات تقنية عالية جداً لتعلمها.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "ألعاب التمارين تهدف إلى تحسين الحالة الصحية والبدنية للاعب من خلال ممارسات رياضية.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الألعاب الفردية هي الألعاب التي يتنافس فيها لاعبان ضد بعضهما البعض للوصول لهدف معين.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "الألعاب الجماعية عبر الإنترنت تهدف غالباً إلى تعزيز روح التعاون والتنافس الجماعي.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الألعاب البسيطة (Simple Games) تركز غالباً على موضوع واحد أو مجال محدد وقد تتضمن مستويات صعوبة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الألعاب المعقدة هي التي تستغرق وقتاً طويلاً يتراوح بين 20 إلى 60 ساعة أو أكثر لإتمامها.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "مرحلة 'تصميم اللعبة' تشمل تحديد السيناريو، والشخصيات، وواجهة المستخدم، والأصوات.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "'تجريب اللعبة' (Game testing) هي مرحلة غير ضرورية إذا كان المبرمج محترفاً.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "يجب أن يشتمل فريق اختبار اللعبة على أخصائي تكنولوجيا تعليم وعلم نفس لضمان جودتها التربوية.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "عند اختيار لعبة تعليمية، لا يشترط وضوح الأهداف التعليمية طالما كانت اللعبة ممتعة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "قواعد اللعبة (Rules) هي الضوابط التي تحدد كيفية تحقيق التقدم والتحدي داخل اللعبة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "يجب أن يكون المحتوى التعليمي للعبة مرتبطاً تماماً بالمواضيع التي يتم تدريسها في المنهج.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "التغذية الراجعة في اللعبة يجب أن تكون جذابة وممتعة وتحافظ على تركيز المتعلم.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الألعاب التي تشجع على العمل الجماعي والإبداع تعتبر أفضل تربوياً من الألعاب الفردية البحتة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "ميزة 'المساعدة' داخل اللعبة تهدف إلى توضيح المهام المطلوبة للمتعلم في حال تعثره.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "ألعاب الحظ تعتبر أكثر قيمة تعليمية من الألعاب التي تعتمد على الاستراتيجية والتفكير.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "يفضل اختيار الألعاب التي تتيح للمتعلم التحكم الكامل وتغيير الشخصيات أو مستويات الصعوبة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "واجهة المستخدم (User Interface) يجب أن تكون معقدة لتحدي ذكاء الطالب التقني.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+},
+{
+  "q": "خاصية 'حفظ وتحميل اللعبة' ضرورية خاصة في الألعاب الكبيرة التي تستغرق وقتاً طويلاً.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "يجب أن يكون مستوى اللغة المستخدم في اللعبة متناسباً مع المرحلة العمرية للمستهدفين.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الوقت المخصص للعبة يجب أن يقدره المعلم بناءً على المحتوى وقدرات الطلاب.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "التحدي في اللعبة يجب أن يكون متدرجاً (يزداد مع تقدم أداء اللاعب) لضمان المتعة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "تساهم الألعاب التعليمية في تفريد التعليم لأن كل طالب يتقدم حسب سرعته الخاصة.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 0 // صحيحة
+},
+{
+  "q": "الألعاب التعليمية لا تعالج مشكلات الفروق الفردية بين الطلاب.",
+  "options": ["صحيحة", "خاطئة"],
+  "correct": 1 // خاطئة
+}
+];
+let index = 0;
+let score = 0;
+let userAnswers = Array(questions.length).fill(null);
+
+function updateProgress(){
+    document.getElementById("progressText").textContent =
+        `السؤال ${index+1} من ${questions.length}`;
+
+    document.getElementById("progressBar").style.width =
+        ((index+1)/questions.length)*100 + "%";
+}
+
+function loadQuestion(){
+    updateProgress();
+
+    const q = questions[index];
+    document.getElementById("questionText").textContent = q.q;
+    document.getElementById("feedback").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+
+    document.getElementById("prevBtn").style.display = index>0?"block":"none";
+
+    document.getElementById("options").innerHTML = `
+        <div class="option" onclick="selectOption(0)">✓ صواب</div>
+        <div class="option" onclick="selectOption(1)">✗ خطأ</div>
+    `;
+
+    if(userAnswers[index] !== null){
+        showSavedAnswer();
+    }
+}
+
+function selectOption(i){
+    if(userAnswers[index] !== null) return;
+
+    userAnswers[index] = i;
+    const correct = questions[index].correct;
+    const options = document.querySelectorAll(".option");
+
+    if(i === correct){
+        score++;
+        document.getElementById("feedback").textContent="✔ إجابة صحيحة";
+    }else{
+        document.getElementById("feedback").textContent="❌ إجابة خاطئة";
+    }
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        else if(idx === i) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("score").textContent=`النتيجة: ${score}`;
+    document.getElementById("feedback").style.display="block";
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function showSavedAnswer(){
+    const correct = questions[index].correct;
+    const selected = userAnswers[index];
+    const options = document.querySelectorAll(".option");
+
+    options.forEach((op,idx)=>{
+        if(idx === correct) op.classList.add("correct");
+        if(idx === selected && idx !== correct) op.classList.add("wrong");
+        op.style.pointerEvents="none";
+    });
+
+    document.getElementById("feedback").style.display="block";
+    document.getElementById("feedback").textContent =
+        selected === correct ? "✔ إجابة صحيحة" : "❌ إجابة خاطئة";
+
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function nextQuestion(){
+    index++;
+    if(index === questions.length){
+        showResult();
+    }else{
+        loadQuestion();
+    }
+}
+
+function prevQuestion(){
+    if(index>0){
+        index--;
+        loadQuestion();
+    }
+}
+
+function showResult(){
+    document.querySelector(".progress-bar").style.display="none";
+    document.getElementById("progressText").style.display="none";
+    document.getElementById("questionText").style.display="none";
+    document.getElementById("options").style.display="none";
+    document.getElementById("nextBtn").style.display="none";
+    document.getElementById("prevBtn").style.display="none";
+    document.getElementById("feedback").style.display="none";
+
+    const percent = Math.round((score/questions.length)*100);
+    document.getElementById("result").style.display="block";
+    document.getElementById("result").innerHTML =
+        `انتهى الاختبار<br>${score}/${questions.length}<br>${percent}%`;
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
